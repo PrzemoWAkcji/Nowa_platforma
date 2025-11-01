@@ -1,0 +1,41 @@
+{
+  "recommendations": [
+    // Essential TypeScript/JavaScript
+    "ms-vscode.vscode-typescript-next",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    
+    // React/Next.js
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-json",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    
+    // Backend/Database
+    "prisma.prisma",
+    "ms-vscode.vscode-json",
+    
+    // Git & Collaboration
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    
+    // Development Tools
+    "ms-vscode.powershell",
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+    
+    // Code Quality
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "gruntfuggly.todo-tree",
+    
+    // Productivity
+    "ms-vscode.vscode-npm-script",
+    "christian-kohler.npm-intellisense",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript"
+  ]
+}

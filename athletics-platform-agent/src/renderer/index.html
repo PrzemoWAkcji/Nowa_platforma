@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athletics Platform Agent</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>Athletics Platform Agent</h1>
+                <div class="status-indicators">
+                    <div class="status-item">
+                        <span class="status-label">Połączenie:</span>
+                        <span id="connection-status" class="status-value status-disconnected">Rozłączono</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Monitor:</span>
+                        <span id="monitor-status" class="status-value status-inactive">Nieaktywny</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-button active" data-tab="config">Konfiguracja</button>
+                <button class="tab-button" data-tab="status">Status</button>
+                <button class="tab-button" data-tab="logs">Logi</button>
+            </div>
+
+            <!-- Configuration Tab -->
+            <div id="config-tab" class="tab-content active">
+                <div class="section">
+                    <h2>Konfiguracja serwera</h2>
+                    <div class="form-group">
+                        <label for="server-url">URL serwera:</label>
+                        <input type="text" id="server-url" placeholder="http://localhost:3000" />
+                    </div>
+                    <div class="form-group">
+                        <label for="api-key">Klucz API:</label>
+                        <input type="password" id="api-key" placeholder="Wprowadź klucz API" />
+                    </div>
+                    <div class="form-group">
+                        <label for="competition-id">ID zawodów:</label>
+                        <input type="text" id="competition-id" placeholder="ID zawodów" />
+                    </div>
+                    <div class="form-group">
+                        <label for="competition-name">Nazwa zawodów:</label>
+                        <input type="text" id="competition-name" placeholder="Nazwa zawodów" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" placeholder="Twój email" />
+                    </div>
+                    <button id="test-connection" class="btn btn-secondary">Testuj połączenie</button>
+                </div>
+
+                <div class="section">
+                    <h2>Katalogi FinishLynx</h2>
+                    <div class="form-group">
+                        <label for="input-directory">Katalog wejściowy (listy startowe):</label>
+                        <div class="directory-input">
+                            <input type="text" id="input-directory" readonly />
+                            <button id="select-input-dir" class="btn btn-small">Wybierz</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="output-directory">Katalog wyjściowy (wyniki):</label>
+                        <div class="directory-input">
+                            <input type="text" id="output-directory" readonly />
+                            <button id="select-output-dir" class="btn btn-small">Wybierz</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Ustawienia synchronizacji</h2>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="auto-sync" checked />
+                            Automatyczna synchronizacja
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="sync-interval">Interwał synchronizacji (sekundy):</label>
+                        <input type="number" id="sync-interval" value="10" min="5" max="300" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enable-notifications" checked />
+                            Pokaż powiadomienia
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="control-buttons">
+                        <button id="save-config" class="btn btn-primary">Zapisz konfigurację</button>
+                        <button id="start-sync" class="btn btn-success">Start synchronizacji</button>
+                        <button id="stop-sync" class="btn btn-danger">Stop synchronizacji</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Tab -->
+            <div id="status-tab" class="tab-content">
+                <div class="section">
+                    <h2>Status synchronizacji</h2>
+                    <div class="status-grid">
+                        <div class="status-card">
+                            <h3>Połączenie</h3>
+                            <div id="detailed-connection-status" class="status-value">Rozłączono</div>
+                        </div>
+                        <div class="status-card">
+                            <h3>Monitor wyników</h3>
+                            <div id="detailed-monitor-status" class="status-value">Nieaktywny</div>
+                        </div>
+                        <div class="status-card">
+                            <h3>Ostatnia synchronizacja</h3>
+                            <div id="last-sync" class="status-value">Nigdy</div>
+                        </div>
+                        <div class="status-card">
+                            <h3>Przetworzone pliki</h3>
+                            <div id="processed-files" class="status-value">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Kolejka plików</h2>
+                    <div id="file-queue" class="file-queue">
+                        <p class="empty-message">Brak plików w kolejce</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Akcje</h2>
+                    <div class="action-buttons">
+                        <button id="force-sync-startlists" class="btn btn-secondary">Wymuś synchronizację list startowych</button>
+                        <button id="force-sync-results" class="btn btn-secondary">Wymuś synchronizację wyników</button>
+                        <button id="clear-queue" class="btn btn-warning">Wyczyść kolejkę</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Tab -->
+            <div id="logs-tab" class="tab-content">
+                <div class="section">
+                    <div class="logs-header">
+                        <h2>Logi systemowe</h2>
+                        <div class="logs-controls">
+                            <select id="log-level-filter">
+                                <option value="">Wszystkie poziomy</option>
+                                <option value="info">Info</option>
+                                <option value="warn">Ostrzeżenia</option>
+                                <option value="error">Błędy</option>
+                                <option value="debug">Debug</option>
+                            </select>
+                            <button id="clear-logs" class="btn btn-small">Wyczyść</button>
+                            <button id="export-logs" class="btn btn-small">Eksportuj</button>
+                        </div>
+                    </div>
+                    <div id="logs-container" class="logs-container">
+                        <p class="empty-message">Brak logów</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

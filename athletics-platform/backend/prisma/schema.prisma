@@ -1,0 +1,894 @@
+// 🗄️ Kompletny Schema Prisma dla Platformy Lekkoatletycznej
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 👤 UŻYTKOWNICY I AUTORYZACJA
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(ATHLETE)
+  password  String
+  isActive  Boolean  @default(true)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  
+  // Relations
+  registrations Registration[]
+  createdCompetitions Competition[] @relation("CompetitionCreator")
+  coachedAthletes Athlete[] @relation("CoachAthletes") // Zawodnicy trenera
+  submittedProtests Protest[] @relation("ProtestSubmitter")
+  reviewedProtests Protest[] @relation("ProtestReviewer")
+  createdRecords Record[]
+  createdRelayTeams RelayTeam[] @relation("RelayTeamCreator")
+  
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// 🏃‍♂️ ZAWODNICY
+model Athlete {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  gender        Gender
+  club          String?
+  category      Category
+  nationality   String?
+  licenseNumber String?  @unique // Numer licencji zawodnika
+  
+  // Para-athletics
+  classification String? // T44, F20, etc.
+  isParaAthlete Boolean @default(false)
+  
+  // Coach relation
+  coachId String? // ID trenera
+  
+  // Personal Bests and Season Bests - stored as JSON for different events
+  personalBests Json? // { "100M": { "result": "10.50", "date": "2024-06-15", "competition": "Championship" }, ... }
+  seasonBests   Json? // { "100M": { "result": "10.65", "date": "2024-05-20", "competition": "Regional" }, ... }
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  registrations Registration[]
+  results       Result[]
+  combinedEvents CombinedEvent[]
+  protests      Protest[]
+  coach         User? @relation("CoachAthletes", fields: [coachId], references: [id])
+  relayTeamMemberships RelayTeamMember[]
+  
+  @@index([lastName, firstName])
+  @@index([gender])
+  @@index([category])
+  @@index([club])
+  @@map("athletes")
+}
+
+// 🏆 ZAWODY
+model Competition {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  location    String
+  venue       String?
+  type        CompetitionType
+  status      CompetitionStatus @default(DRAFT)
+  
+  // Agent Integration
+  agentId     String?           @unique // Unikalny ID dla agenta FinishLynx
+  liveResultsEnabled Boolean   @default(false) // Czy włączone są wyniki na żywo
+  liveResultsToken   String?   @unique // Token dostępu do wyników na żywo
+  
+  // Registration settings
+  registrationStartDate DateTime?
+  registrationEndDate   DateTime?
+  maxParticipants       Int?
+  registrationFee       Decimal?
+  
+  // Settings
+  isPublic    Boolean @default(true)
+  allowLateRegistration Boolean @default(false)
+  
+  // Logo settings
+  logos       Json?   // Array of logo objects: [{ id: string, filename: string, originalName: string, url: string, uploadedAt: string }]
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+  
+  // Relations
+  createdBy     User           @relation("CompetitionCreator", fields: [createdById], references: [id])
+  events        Event[]
+  registrations Registration[]
+  combinedEvents CombinedEvent[]
+  protests      Protest[]
+  relayTeams    RelayTeam[]
+  
+  // Organization module relations
+  schedules     CompetitionSchedule[]
+  
+  @@index([startDate])
+  @@index([status])
+  @@index([isPublic])
+  @@index([createdById])
+  @@map("competitions")
+}
+
+// 🏃 KONKURENCJE
+model Event {
+  id            String    @id @default(cuid())
+  name          String
+  type          EventType
+  gender        Gender
+  category      Category
+  unit          Unit
+  
+  // Event settings
+  maxParticipants Int?
+  seedTimeRequired Boolean @default(false)
+  scheduledTime   DateTime? // Scheduled time for the event
+  isCompleted     Boolean @default(false) // Czy konkurencja została zakończona
+  
+  // Additional fields for event details
+  distance      String?   // e.g., "100m", "5000m"
+  discipline    String?   // e.g., "sprint", "distance", "jump", "throw"
+  
+  // Equipment specifications for different age categories
+  hurdleHeight  String?   // Wysokość płotków (np. "0.84m", "0.91m", "1.067m")
+  implementWeight String? // Waga przyrządu (np. "4kg", "5kg", "6kg", "7.26kg")
+  implementSpecs Json?    // Dodatkowe specyfikacje sprzętu w formacie JSON
+  
+  // Metadata
+  competitionId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  results     Result[]
+  registrationEvents RegistrationEvent[]
+  protests    Protest[]
+  relayTeamRegistrations RelayTeamRegistration[]
+  relayTeamResults RelayTeamResult[]
+  
+  // Organization module relations
+  scheduleItems ScheduleItem[]
+  heats         Heat[]
+  
+  @@map("events")
+}
+
+// 🏃‍♂️ ZESPOŁY SZTAFETOWE
+model RelayTeam {
+  id            String   @id @default(cuid())
+  name          String   // Nazwa zespołu (np. "AZS Warszawa I", "Legia Warszawa")
+  club          String?  // Klub/organizacja
+  competitionId String
+  createdById   String   // Trener/osoba zgłaszająca
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  createdBy     User        @relation("RelayTeamCreator", fields: [createdById], references: [id])
+  members       RelayTeamMember[]
+  registrations RelayTeamRegistration[]
+  results       RelayTeamResult[]
+  
+  @@unique([name, competitionId]) // Unikalna nazwa zespołu w ramach zawodów
+  @@map("relay_teams")
+}
+
+// 👥 CZŁONKOWIE ZESPOŁU SZTAFETOWEGO
+model RelayTeamMember {
+  id          String @id @default(cuid())
+  teamId      String
+  athleteId   String
+  position    Int    // Pozycja w sztafecie (1-4 dla podstawowych, 5-6 dla rezerwowych)
+  isReserve   Boolean @default(false) // Czy jest rezerwowym
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  team        RelayTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  athlete     Athlete   @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, athleteId]) // Zawodnik może być tylko raz w zespole
+  @@unique([teamId, position]) // Każda pozycja może być zajęta tylko przez jednego zawodnika
+  @@map("relay_team_members")
+}
+
+// 📝 REJESTRACJE ZESPOŁÓW SZTAFETOWYCH
+model RelayTeamRegistration {
+  id        String @id @default(cuid())
+  teamId    String
+  eventId   String
+  seedTime  String? // Czas zgłoszeniowy zespołu
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  team      RelayTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, eventId]) // Zespół może być zarejestrowany tylko raz w konkurencji
+  @@map("relay_team_registrations")
+}
+
+// 🏆 WYNIKI ZESPOŁÓW SZTAFETOWYCH
+model RelayTeamResult {
+  id             String  @id @default(cuid())
+  teamId         String
+  eventId        String
+  result         String  // Wynik zespołu (np. "39.85")
+  position       Int?    // Pozycja w klasyfikacji
+  points         Int?    // Punkty (jeśli stosowane)
+  wind           String? // Wiatr
+  reaction       String? // Czas reakcji pierwszego zawodnika
+  splits         Json?   // Czasy międzyczasowe poszczególnych członków
+  notes          String? // Dodatkowe notatki
+  
+  // Status flags
+  isValid        Boolean @default(true)
+  isDNF          Boolean @default(false) // Did Not Finish
+  isDNS          Boolean @default(false) // Did Not Start
+  isDQ           Boolean @default(false) // Disqualified
+  isNationalRecord Boolean @default(false)
+  isWorldRecord    Boolean @default(false)
+  
+  // Doping control
+  selectedForDopingControl Boolean @default(false)
+  dopingControlStatus      DopingControlStatus @default(NOT_SELECTED)
+  
+  // Metadata
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  team           RelayTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  protests       Protest[]
+  
+  @@unique([teamId, eventId]) // Zespół może mieć tylko jeden wynik w konkurencji
+  @@map("relay_team_results")
+}
+
+// 📝 REJESTRACJE
+model Registration {
+  id            String            @id @default(cuid())
+  athleteId     String
+  competitionId String
+  userId        String
+  status        RegistrationStatus @default(PENDING)
+  
+  // Payment
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentAmount Decimal?
+  paymentDate   DateTime?
+  
+  // Additional info
+  seedTime      String?
+  notes         String?
+  bibNumber     String?
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  athlete     Athlete     @relation(fields: [athleteId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  results     Result[]
+  events      RegistrationEvent[]
+  
+  // Organization module relations
+  heatAssignments HeatAssignment[]
+  
+  @@unique([athleteId, competitionId])
+  @@map("registrations")
+}
+
+// 🔗 REJESTRACJE NA KONKURENCJE (Many-to-Many)
+model RegistrationEvent {
+  id             String @id @default(cuid())
+  registrationId String
+  eventId        String
+  seedTime       String?
+  
+  // Relations
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([registrationId, eventId])
+  @@map("registration_events")
+}
+
+// 🥇 WYNIKI
+model Result {
+  id             String  @id @default(cuid())
+  athleteId      String
+  eventId        String
+  registrationId String
+  
+  // Result data
+  result         String  // "10.50", "7.45m", "2:15.30"
+  position       Int?
+  points         Int?
+  
+  // Additional data
+  wind           String? // Wind speed for track events
+  reaction       String? // Reaction time
+  splits         Json?   // Split times for longer events
+  notes          String? // Additional notes
+  
+  // Status
+  isValid        Boolean @default(true)
+  isDNF          Boolean @default(false) // Did Not Finish
+  isDNS          Boolean @default(false) // Did Not Start
+  isDQ           Boolean @default(false) // Disqualified
+  
+  // Records
+  isPersonalBest Boolean @default(false)
+  isSeasonBest   Boolean @default(false)
+  isNationalRecord Boolean @default(false)
+  isWorldRecord  Boolean @default(false)
+  
+  // Anti-doping control (zgodnie z przepisami LA)
+  selectedForDopingControl Boolean @default(false)
+  dopingControlStatus      DopingControlStatus @default(NOT_SELECTED)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  athlete      Athlete      @relation(fields: [athleteId], references: [id])
+  event        Event        @relation(fields: [eventId], references: [id])
+  registration Registration @relation(fields: [registrationId], references: [id])
+  protests     Protest[]
+  
+  // Compound unique constraint for athlete-event combination
+  @@unique([athleteId, eventId])
+  @@map("results")
+}
+
+// 📋 PROTESTY (zgodnie z przepisami LA)
+model Protest {
+  id             String        @id @default(cuid())
+  competitionId  String
+  eventId        String?       // Opcjonalne - protest może dotyczyć całych zawodów
+  resultId       String?       // Opcjonalne - protest może dotyczyć konkretnego wyniku
+  athleteId      String?       // Zawodnik, którego dotyczy protest
+  relayTeamResultId String?    // Opcjonalne - protest może dotyczyć wyniku zespołu sztafetowego
+  
+  // Dane protestu
+  submittedBy    String        // ID osoby składającej protest
+  reason         String        // Powód protestu
+  description    String        // Szczegółowy opis
+  evidence       String?       // Dowody (linki do plików, zdjęć itp.)
+  
+  // Status i rozstrzygnięcie
+  status         ProtestStatus @default(SUBMITTED)
+  reviewedBy     String?       // ID osoby rozpatrującej
+  reviewNotes    String?       // Notatki z rozpatrywania
+  decision       String?       // Decyzja komisji
+  
+  // Opłata za protest (zgodnie z przepisami)
+  feeAmount      Float?
+  feePaid        Boolean       @default(false)
+  
+  // Metadata
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  reviewedAt     DateTime?     // Data rozpatrzenia
+  
+  // Relations
+  competition    Competition   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  event          Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  result         Result?       @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  athlete        Athlete?      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  relayTeamResult RelayTeamResult? @relation(fields: [relayTeamResultId], references: [id], onDelete: Cascade)
+  submitter      User          @relation("ProtestSubmitter", fields: [submittedBy], references: [id])
+  reviewer       User?         @relation("ProtestReviewer", fields: [reviewedBy], references: [id])
+  
+  @@map("protests")
+}
+
+// 🏆 REKORDY (zgodnie z przepisami LA)
+model Record {
+  id            String      @id @default(cuid())
+  
+  // Klasyfikacja rekordu
+  type          RecordType  // WORLD, NATIONAL, REGIONAL, CLUB
+  level         RecordLevel // SENIOR, JUNIOR, YOUTH, MASTERS
+  
+  // Dane konkurencji
+  eventName     String      // Nazwa konkurencji (np. "100m", "Shot Put")
+  discipline    String      // Dyscyplina (TRACK, FIELD, ROAD, etc.)
+  gender        Gender      // Płeć
+  category      Category    // Kategoria wiekowa
+  
+  // Dane rekordu
+  result        String      // Wynik (np. "9.58", "23.12m")
+  resultValue   Float       // Wartość numeryczna do porównań
+  unit          Unit        // Jednostka (TIME, DISTANCE, HEIGHT, POINTS)
+  
+  // Warunki (zgodnie z przepisami LA)
+  wind          String?     // Prędkość wiatru (dla biegów i skoków)
+  altitude      Int?        // Wysokość n.p.m. (dla rekordów wysokogórskich)
+  isIndoor      Boolean     @default(false) // Czy rekord halowy
+  
+  // Dane zawodnika
+  athleteName   String      // Imię i nazwisko rekordzisty
+  nationality   String      // Narodowość
+  dateOfBirth   DateTime?   // Data urodzenia (dla weryfikacji kategorii)
+  
+  // Dane zawodów
+  competitionName String    // Nazwa zawodów
+  location      String      // Miejsce zawodów
+  venue         String?     // Obiekt sportowy
+  date          DateTime    // Data ustanowienia rekordu
+  
+  // Ratyfikacja (zgodnie z przepisami LA)
+  isRatified    Boolean     @default(false) // Czy rekord został ratyfikowany
+  ratifiedBy    String?     // Kto ratyfikował (IAAF, krajowy związek, etc.)
+  ratifiedDate  DateTime?   // Data ratyfikacji
+  
+  // Status
+  isActive      Boolean     @default(true)  // Czy rekord jest aktualny
+  supersededBy  String?     // ID rekordu, który pobił ten rekord
+  supersededDate DateTime?  // Data pobicia rekordu
+  
+  // Metadata
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  createdBy     String?     // Kto dodał rekord do systemu
+  
+  // Relations
+  creator       User?       @relation(fields: [createdBy], references: [id])
+  supersededByRecord Record? @relation("RecordSuperseded", fields: [supersededBy], references: [id])
+  supersededRecords  Record[] @relation("RecordSuperseded")
+  
+  @@index([type, eventName, gender, category])
+  @@index([nationality, eventName])
+  @@index([isActive, type])
+  @@index([date])
+  @@map("records")
+}
+
+// 🏷️ ENUMS
+
+enum UserRole {
+  ATHLETE     // Zawodnik - może się rejestrować na zawody
+  COACH       // Trener - może zgłaszać swoich zawodników
+  ORGANIZER   // Organizator - może tworzyć i zarządzać swoimi zawodami
+  ADMIN       // Administrator - pełny dostęp do systemu
+  JUDGE       // Sędzia - może zarządzać wynikami
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  MIXED
+}
+
+enum Category {
+  // Specjalne kategorie
+  WIELE  // Wiele kategorii w jednym biegu
+  
+  // Kategorie dziecięce (0-22 lat)
+  AGE_0_11  // 0-11 lat
+  AGE_5     // 5 lat
+  AGE_6     // 6 lat
+  AGE_7     // 7 lat
+  AGE_8     // 8 lat
+  AGE_9     // 9 lat
+  AGE_10    // 10 lat
+  AGE_11    // 11 lat
+  AGE_12    // 12 lat
+  AGE_13    // 13 lat
+  AGE_14    // 14 lat
+  AGE_15    // 15 lat
+  AGE_16    // 16 lat
+  AGE_17    // 17 lat
+  AGE_18    // 18 lat
+  AGE_19    // 19 lat
+  AGE_20    // 20 lat
+  AGE_21    // 21 lat
+  AGE_22    // 22 lat
+  
+  // Kategorie szkolne (klasy)
+  CLASS_1_SZKOLA_SREDNIA    // 1. Klasa szkoły średniej
+  CLASS_2_SZKOLA_SREDNIA    // 2. Klasa szkoły średniej
+  CLASS_3_SZKOLA_SREDNIA    // 3. Klasa szkoły średniej
+  CLASS_4_SZKOLA_SREDNIA    // 4. Klasa szkoły średniej
+  CLASS_5_SZKOLA_SREDNIA    // 5. Klasa szkoły średniej
+  CLASS_6_SZKOLA_SREDNIA    // 6. Klasa szkoły średniej
+  CLASS_7   // 7. Klasa
+  CLASS_8   // 8. Klasa
+  
+  // Kategorie młodzieżowe
+  U8     // Under 8
+  U9     // Under 9
+  U10    // Under 10
+  U11    // Under 11
+  U12    // Under 12
+  U13    // Under 13
+  U14    // Under 14
+  U15    // Under 15
+  U16    // Under 16
+  U18    // Under 18  
+  U20    // Under 20
+  U23    // Under 23
+  
+  // Kategorie seniorskie
+  SENIOR // 20+
+  
+  // Kategorie Masters
+  M35    // Masters 35+
+  M40    // Masters 40+
+  M45    // Masters 45+
+  M50    // Masters 50+
+  M55    // Masters 55+
+  M60    // Masters 60+
+  M65    // Masters 65+
+  M70    // Masters 70+
+  M75    // Masters 75+
+  M80    // Masters 80+
+  M85    // Masters 85+
+  M90    // Masters 90+
+  M95    // Masters 95+
+  M100   // Masters 100+
+  M105   // Masters 105+
+  M110   // Masters 110+
+}
+
+enum CompetitionType {
+  OUTDOOR      // Outdoor track & field
+  INDOOR       // Indoor track & field
+  ROAD         // Road running
+  CROSS_COUNTRY // Cross country
+  TRAIL        // Trail running
+  DUATHLON     // Duathlon
+  TRIATHLON    // Triathlon
+  MULTI_EVENT  // Decathlon, Heptathlon
+}
+
+enum CompetitionStatus {
+  DRAFT                // Being created
+  PUBLISHED           // Published but registration not open
+  REGISTRATION_OPEN   // Registration is open
+  REGISTRATION_CLOSED // Registration closed, before event
+  ONGOING            // Event is happening
+  COMPLETED          // Event finished
+  CANCELLED          // Event cancelled
+}
+
+enum EventType {
+  TRACK       // Running events on track
+  FIELD       // Jumping and throwing
+  ROAD        // Road running
+  COMBINED    // Multi-events
+  RELAY       // Relay events
+}
+
+enum Unit {
+  TIME        // Seconds (10.50)
+  DISTANCE    // Meters (7.45m)
+  HEIGHT      // Meters (2.15m)
+  POINTS      // Points (8500)
+}
+
+enum RegistrationStatus {
+  PENDING     // Awaiting approval/payment
+  CONFIRMED   // Confirmed and paid
+  CANCELLED   // Cancelled by user
+  REJECTED    // Rejected by organizer
+  WAITLIST    // On waiting list
+}
+
+enum PaymentStatus {
+  PENDING     // Payment not made
+  PROCESSING  // Payment being processed
+  COMPLETED   // Payment successful
+  FAILED      // Payment failed
+  REFUNDED    // Payment refunded
+}
+
+enum DopingControlStatus {
+  NOT_SELECTED    // Nie wybrano do kontroli
+  SELECTED        // Wybrano do kontroli
+  NOTIFIED        // Powiadomiono zawodnika
+  COMPLETED       // Kontrola zakończona
+  REFUSED         // Zawodnik odmówił kontroli
+  MISSED          // Zawodnik nie stawił się na kontrolę
+}
+
+enum ProtestStatus {
+  SUBMITTED       // Złożony
+  UNDER_REVIEW    // W trakcie rozpatrywania
+  ACCEPTED        // Przyjęty
+  REJECTED        // Odrzucony
+  WITHDRAWN       // Wycofany
+}
+
+enum RecordType {
+  WORLD           // Rekord świata
+  CONTINENTAL     // Rekord kontynentu
+  NATIONAL        // Rekord kraju
+  REGIONAL        // Rekord regionu/województwa
+  CLUB            // Rekord klubu
+  FACILITY        // Rekord obiektu
+}
+
+enum RecordLevel {
+  SENIOR          // Seniorzy (20+)
+  JUNIOR          // Juniorzy (U20)
+  YOUTH           // Młodzicy (U18)
+  CADETS          // Kadeci (U16)
+  MASTERS         // Weterani (35+)
+  PARA            // Para-atletyka
+}
+
+// 🥇 WIELOBOJE (Combined Events)
+model CombinedEvent {
+  id            String            @id @default(cuid())
+  eventType     CombinedEventType
+  athleteId     String
+  competitionId String
+  gender        Gender
+  totalPoints   Int               @default(0)
+  isComplete    Boolean           @default(false)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  athlete     Athlete               @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  competition Competition           @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  results     CombinedEventResult[]
+  
+  @@unique([athleteId, competitionId, eventType])
+  @@index([competitionId])
+  @@index([competitionId, eventType])
+  @@index([competitionId, eventType, isComplete])
+  @@index([totalPoints])
+  @@map("combined_events")
+}
+
+model CombinedEventResult {
+  id              String  @id @default(cuid())
+  combinedEventId String
+  discipline      String  // "100M", "LJ", "SP", etc.
+  dayOrder        Int     // Kolejność dyscypliny (1-10 dla 10-boju)
+  performance     String? // "10.50", "7.45", "2:15.30"
+  points          Int     @default(0)
+  wind            String? // Prędkość wiatru
+  isValid         Boolean @default(false)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  combinedEvent CombinedEvent @relation(fields: [combinedEventId], references: [id], onDelete: Cascade)
+  
+  @@unique([combinedEventId, discipline])
+  @@index([combinedEventId])
+  @@index([combinedEventId, dayOrder])
+  @@index([discipline])
+  @@map("combined_event_results")
+}
+
+enum CombinedEventType {
+  // Oficjalne wieloboje World Athletics
+  DECATHLON                    // 10-bój męski (oficjalny)
+  HEPTATHLON                   // 7-bój żeński (oficjalny)
+  PENTATHLON_INDOOR            // 5-bój indoor (oficjalny)
+  PENTATHLON_OUTDOOR           // 5-bój outdoor (oficjalny)
+  
+  // Wieloboje Masters (WMA) - oznaczone dla rozróżnienia
+  DECATHLON_MASTERS            // 10-bój Masters (WMA)
+  HEPTATHLON_MASTERS           // 7-bój Masters (WMA)
+  PENTATHLON_INDOOR_MASTERS    // 5-bój indoor Masters (WMA)
+  PENTATHLON_OUTDOOR_MASTERS   // 5-bój outdoor Masters (WMA)
+  THROWS_PENTATHLON_MASTERS    // 5-bój rzutowy Masters (WMA)
+  
+  // Niestandardowe wieloboje (lokalne/dodatkowe)
+  PENTATHLON_U16_MALE          // 5-bój U16 chłopcy (niestandardowy)
+  PENTATHLON_U16_FEMALE        // 5-bój U16 dziewczęta (niestandardowy)
+}
+
+// 📅 PROGRAM MINUTOWY (Schedule)
+model CompetitionSchedule {
+  id            String   @id @default(cuid())
+  competitionId String
+  name          String   // Nazwa programu minutowego
+  description   String?
+  isPublished   Boolean  @default(false)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  items       ScheduleItem[]
+  
+  @@map("competition_schedules")
+}
+
+model ScheduleItem {
+  id         String   @id @default(cuid())
+  scheduleId String
+  eventId    String
+  
+  // Timing
+  scheduledTime DateTime
+  actualTime    DateTime?
+  duration      Int?      // Przewidywany czas trwania w minutach
+  
+  // Event details
+  round         EventRound @default(QUALIFICATION)
+  seriesCount   Int        @default(1)
+  finalistsCount Int?      // Liczba zawodników przechodzących do finału
+  
+  // Status
+  status        ScheduleStatus @default(SCHEDULED)
+  notes         String?
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  schedule CompetitionSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  event    Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@map("schedule_items")
+}
+
+// 🏃‍♂️ ROZSTAWIENIE ZAWODNIKÓW (Heat/Series Management)
+model Heat {
+  id      String @id @default(cuid())
+  eventId String
+  
+  // Heat details
+  heatNumber Int
+  round      EventRound
+  maxLanes   Int        @default(20)
+  
+  // Timing
+  scheduledTime DateTime?
+  actualTime    DateTime?
+  
+  // Status
+  isCompleted Boolean @default(false)
+  notes       String?
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  assignments  HeatAssignment[]
+  
+  @@unique([eventId, heatNumber, round])
+  @@map("heats")
+}
+
+model HeatAssignment {
+  id             String @id @default(cuid())
+  heatId         String
+  registrationId String
+  
+  // Lane assignment
+  lane           Int?
+  seedTime       String?
+  seedRank       Int?
+  
+  // Assignment method (according to PZLA rules)
+  assignmentMethod AssignmentMethod @default(MANUAL)
+  
+  // Status
+  isPresent      Boolean @default(true)
+  isDNS          Boolean @default(false) // Did Not Start
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  heat         Heat         @relation(fields: [heatId], references: [id], onDelete: Cascade)
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  
+  @@unique([heatId, lane])
+  @@unique([heatId, registrationId])
+  @@map("heat_assignments")
+}
+
+
+
+// 🏷️ NOWE ENUMS
+
+enum EventRound {
+  QUALIFICATION    // Eliminacje
+  SEMIFINAL       // Półfinał
+  FINAL           // Finał
+  QUALIFICATION_A // Eliminacje grupa A
+  QUALIFICATION_B // Eliminacje grupa B
+  QUALIFICATION_C // Eliminacje grupa C
+}
+
+enum ScheduleStatus {
+  SCHEDULED       // Zaplanowane
+  IN_PROGRESS     // W trakcie
+  COMPLETED       // Zakończone
+  DELAYED         // Opóźnione
+  CANCELLED       // Odwołane
+  POSTPONED       // Przełożone
+}
+
+enum AssignmentMethod {
+  // Podstawowe metody
+  MANUAL                    // Ręczne rozstawienie
+  SEED_TIME                 // Według czasów zgłoszeniowych
+  RANDOM                    // Losowe
+  SERPENTINE                // Metoda serpentynowa (zgodnie z przepisami PZLA)
+  STRAIGHT_FINAL            // Finał bezpośredni
+  
+  // Metody podziału na serie/grupy (zgodnie z Roster Athletics)
+  ALPHABETICAL_NUMBER       // Alfanumerycznie (po numerze)
+  ALPHABETICAL_NAME         // Alfabetycznie (po nazwisku)
+  ROUND_ROBIN              // Koło (round robin)
+  ZIGZAG                   // Zygzak
+  BY_RESULT                // Według czasu/wyniku
+  BY_RESULT_INDOOR         // Według czasu (hala)
+  
+  // Metody przypisania do toru/kolejności
+  BEST_TO_WORST            // Od najlepszego do najgorszego
+  WORST_TO_BEST            // Od najgorszego do najlepszego
+  HALF_AND_HALF            // Pół na pół
+  PAIRS                    // Pary
+  PAIRS_INDOOR             // Pary (hala)
+  STANDARD_OUTSIDE         // Standardowo od zewnątrz
+  STANDARD_INSIDE          // Standardowo od wewnątrz
+  WATERFALL                // Wodospad
+  WATERFALL_REVERSE        // Wodospad odwrócony
+  
+  // World Athletics standardy
+  WA_HALVES_AND_PAIRS      // World Athletics - Połówki i pary (stary standard)
+  WA_SPRINTS_STRAIGHT      // World Athletics - sprinty (prosta)
+  WA_200M                  // World Athletics - 200m
+  WA_400M_800M             // World Athletics - 400m/800m
+  WA_9_LANES               // World Athletics - 9 torów
+}

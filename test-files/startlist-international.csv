@@ -1,0 +1,7 @@
+MeetingId,EntryId,StartListId,Title,RelayTeamName,FullName,FirstName,MiddleName,LastName,Gender,ParaClassRunJump,ParaClassThrow,NotesPublic,NotesInternal,CountryCode,DateOfBirth,YearOfBirth,SchoolGrade,TilastopajaId,RelayId,EventStart,EventCode,PZLAEventCode,PZLAEventCodeNum,UKAEventCode,EventStage,AgeGroup,MultipleAgeGroups,OldestAgeGroup,CombinedEventRelation,ShortClubName,ClubName,TeamName,TeamGender,BibNumber,Lane,EventGroup,PersonalBest,SeasonBest,SeedingResult
+POL2025,1001,SL001,Mr,,,John,,Smith,Male,,,,,POL,1995-05-15,1995,,,,100m Men,100M,100m mężczyzn,101,,Final,Senior,,,,WAR,Warsaw Athletics,,M,101,4,,10.25,10.50,10.40
+POL2025,1002,SL002,Ms,,,Sarah,,Johnson,Female,,,,,POL,1998-03-22,1998,,,,100m Women,100W,100m kobiet,102,,Final,Senior,,,,KRA,Krakow Running Club,,F,201,5,,11.65,11.80,11.70
+POL2025,1003,SL003,Mr,,,Michael,,Brown,Male,,,,,GER,1992-11-08,1992,,,,200m Men,200M,200m mężczyzn,201,,Final,Senior,,,,BER,Berlin Track Club,,M,102,3,,20.95,21.20,21.10
+POL2025,1004,SL004,Ms,,,Emma,,Davis,Female,,,,,GBR,1996-07-14,1996,,,,200m Women,200W,200m kobiet,202,,Final,Senior,,,,LON,London Athletics,,F,202,6,,24.20,24.50,24.35
+POL2025,1005,SL005,Mr,,,David,,Wilson,Male,,,,,FRA,1994-09-30,1994,,,,400m Men,400M,400m mężczyzn,301,,Final,Senior,,,,PAR,Paris Sports Club,,M,103,2,,47.50,47.80,47.65
+POL2025,1006,SL006,Ms,,,Lisa,,Miller,Female,,,,,ITA,1997-12-05,1997,,,,400m Women,400W,400m kobiet,302,,Final,Senior,,,,ROM,Rome Track Team,,F,203,7,,53.95,54.20,54.10

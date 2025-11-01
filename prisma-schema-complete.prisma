@@ -1,0 +1,433 @@
+// 🗄️ Kompletny Schema Prisma dla Platformy Lekkoatletycznej
+// Skopiuj to do backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 👤 UŻYTKOWNICY I AUTORYZACJA
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(USER)
+  password  String
+  isActive  Boolean  @default(true)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  
+  // Relations
+  registrations Registration[]
+  createdCompetitions Competition[] @relation("CompetitionCreator")
+  
+  @@map("users")
+}
+
+// 🏃‍♂️ ZAWODNICY
+model Athlete {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime
+  gender      Gender
+  club        String?
+  category    Category
+  nationality String?
+  
+  // Para-athletics
+  classification String? // T44, F20, etc.
+  isParaAthlete Boolean @default(false)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  registrations Registration[]
+  results       Result[]
+  
+  @@map("athletes")
+}
+
+// 🏆 ZAWODY
+model Competition {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  location    String
+  venue       String?
+  type        CompetitionType
+  status      CompetitionStatus @default(DRAFT)
+  
+  // Registration settings
+  registrationStartDate DateTime?
+  registrationEndDate   DateTime?
+  maxParticipants       Int?
+  registrationFee       Decimal?
+  
+  // Settings
+  isPublic    Boolean @default(true)
+  allowLateRegistration Boolean @default(false)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+  
+  // Relations
+  createdBy     User           @relation("CompetitionCreator", fields: [createdById], references: [id])
+  events        Event[]
+  registrations Registration[]
+  
+  @@map("competitions")
+}
+
+// 🏃 KONKURENCJE
+model Event {
+  id            String    @id @default(cuid())
+  name          String
+  type          EventType
+  gender        Gender
+  category      Category
+  unit          Unit
+  
+  // Event settings
+  maxParticipants Int?
+  seedTimeRequired Boolean @default(false)
+  
+  // Metadata
+  competitionId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  results     Result[]
+  registrationEvents RegistrationEvent[]
+  
+  @@map("events")
+}
+
+// 📝 REJESTRACJE
+model Registration {
+  id            String            @id @default(cuid())
+  athleteId     String
+  competitionId String
+  userId        String
+  status        RegistrationStatus @default(PENDING)
+  
+  // Payment
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentAmount Decimal?
+  paymentDate   DateTime?
+  
+  // Additional info
+  seedTime      String?
+  notes         String?
+  bibNumber     String?
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  athlete     Athlete     @relation(fields: [athleteId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  results     Result[]
+  events      RegistrationEvent[]
+  
+  @@unique([athleteId, competitionId])
+  @@map("registrations")
+}
+
+// 🔗 REJESTRACJE NA KONKURENCJE (Many-to-Many)
+model RegistrationEvent {
+  id             String @id @default(cuid())
+  registrationId String
+  eventId        String
+  seedTime       String?
+  
+  // Relations
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([registrationId, eventId])
+  @@map("registration_events")
+}
+
+// 🥇 WYNIKI
+model Result {
+  id             String  @id @default(cuid())
+  athleteId      String
+  eventId        String
+  registrationId String
+  
+  // Result data
+  result         String  // "10.50", "7.45m", "2:15.30"
+  position       Int?
+  points         Int?
+  
+  // Additional data
+  wind           String? // Wind speed for track events
+  reaction       String? // Reaction time
+  splits         Json?   // Split times for longer events
+  
+  // Status
+  isValid        Boolean @default(true)
+  isDNF          Boolean @default(false) // Did Not Finish
+  isDNS          Boolean @default(false) // Did Not Start
+  isDQ           Boolean @default(false) // Disqualified
+  
+  // Records
+  isPersonalBest Boolean @default(false)
+  isSeasonBest   Boolean @default(false)
+  isNationalRecord Boolean @default(false)
+  isWorldRecord  Boolean @default(false)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  athlete      Athlete      @relation(fields: [athleteId], references: [id])
+  event        Event        @relation(fields: [eventId], references: [id])
+  registration Registration @relation(fields: [registrationId], references: [id])
+  
+  @@map("results")
+}
+
+// 💰 PŁATNOŚCI
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Decimal
+  currency      String        @default("PLN")
+  status        PaymentStatus
+  method        PaymentMethod
+  
+  // External payment data
+  externalId    String?       // Stripe payment intent ID
+  externalData  Json?         // Additional payment provider data
+  
+  // Metadata
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  @@map("payments")
+}
+
+// 📊 PUNKTACJA (IAAF/World Athletics Tables)
+model ScoringTable {
+  id       String @id @default(cuid())
+  event    String // "100M", "LONG_JUMP", etc.
+  gender   Gender
+  category Category
+  
+  // Scoring data
+  tableData Json   // IAAF scoring table data
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([event, gender, category])
+  @@map("scoring_tables")
+}
+
+// 📄 DOKUMENTY
+model Document {
+  id            String       @id @default(cuid())
+  name          String
+  type          DocumentType
+  url           String
+  size          Int?
+  mimeType      String?
+  
+  // Relations
+  competitionId String?
+  
+  // Metadata
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  @@map("documents")
+}
+
+// 🔔 POWIADOMIENIA
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  
+  // Metadata
+  createdAt DateTime         @default(now())
+  
+  @@map("notifications")
+}
+
+// 📈 STATYSTYKI (dla analytics)
+model EventStatistic {
+  id            String   @id @default(cuid())
+  eventType     String   // "competition_created", "registration_completed"
+  eventData     Json
+  userId        String?
+  competitionId String?
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  
+  @@map("event_statistics")
+}
+
+// 🏷️ ENUMS
+
+enum UserRole {
+  USER        // Regular user
+  ORGANIZER   // Can create competitions
+  ADMIN       // Full access
+  SUPER_ADMIN // System admin
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  MIXED
+}
+
+enum Category {
+  U16    // Under 16
+  U18    // Under 18  
+  U20    // Under 20
+  SENIOR // 20+
+  M35    // Masters 35+
+  M40    // Masters 40+
+  M45    // Masters 45+
+  M50    // Masters 50+
+  M55    // Masters 55+
+  M60    // Masters 60+
+  M65    // Masters 65+
+  M70    // Masters 70+
+  M75    // Masters 75+
+  M80    // Masters 80+
+}
+
+enum CompetitionType {
+  OUTDOOR      // Outdoor track & field
+  INDOOR       // Indoor track & field
+  ROAD         // Road running
+  CROSS_COUNTRY // Cross country
+  TRAIL        // Trail running
+  DUATHLON     // Duathlon
+  TRIATHLON    // Triathlon
+  MULTI_EVENT  // Decathlon, Heptathlon
+}
+
+enum CompetitionStatus {
+  DRAFT                // Being created
+  PUBLISHED           // Published but registration not open
+  REGISTRATION_OPEN   // Registration is open
+  REGISTRATION_CLOSED // Registration closed, before event
+  ONGOING            // Event is happening
+  COMPLETED          // Event finished
+  CANCELLED          // Event cancelled
+}
+
+enum EventType {
+  TRACK       // Running events on track
+  FIELD       // Jumping and throwing
+  ROAD        // Road running
+  COMBINED    // Multi-events
+}
+
+enum Unit {
+  TIME        // Seconds (10.50)
+  DISTANCE    // Meters (7.45m)
+  HEIGHT      // Meters (2.15m)
+  POINTS      // Points (8500)
+}
+
+enum RegistrationStatus {
+  PENDING     // Awaiting approval/payment
+  CONFIRMED   // Confirmed and paid
+  CANCELLED   // Cancelled by user
+  REJECTED    // Rejected by organizer
+  WAITLIST    // On waiting list
+}
+
+enum PaymentStatus {
+  PENDING     // Payment not made
+  PROCESSING  // Payment being processed
+  COMPLETED   // Payment successful
+  FAILED      // Payment failed
+  REFUNDED    // Payment refunded
+}
+
+enum PaymentMethod {
+  CARD        // Credit/debit card
+  BANK_TRANSFER // Bank transfer
+  CASH        // Cash payment
+  BLIK        // BLIK (Polish mobile payment)
+  PAYPAL      // PayPal
+}
+
+enum DocumentType {
+  REGULATION  // Competition regulations
+  START_LIST  // Start lists
+  RESULTS     // Results
+  CERTIFICATE // Certificates
+  INVOICE     // Invoices
+  OTHER       // Other documents
+}
+
+enum NotificationType {
+  INFO        // General information
+  SUCCESS     // Success message
+  WARNING     // Warning
+  ERROR       // Error message
+  REMINDER    // Reminder
+}
+
+// 📊 INDEXES dla wydajności
+
+// User indexes
+@@index([User.email])
+@@index([User.role])
+
+// Athlete indexes  
+@@index([Athlete.lastName, Athlete.firstName])
+@@index([Athlete.category, Athlete.gender])
+@@index([Athlete.club])
+
+// Competition indexes
+@@index([Competition.startDate, Competition.status])
+@@index([Competition.type, Competition.status])
+@@index([Competition.location])
+
+// Registration indexes
+@@index([Registration.competitionId, Registration.status])
+@@index([Registration.athleteId])
+@@index([Registration.userId])
+
+// Result indexes
+@@index([Result.eventId, Result.position])
+@@index([Result.athleteId])
+@@index([Result.points])
+
+// Event indexes
+@@index([Event.competitionId])
+@@index([Event.type, Event.gender, Event.category])

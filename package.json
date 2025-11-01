@@ -1,0 +1,75 @@
+{
+  "name": "athletics-platform",
+  "version": "1.0.0",
+  "description": "Professional Athletics Competition Management Platform",
+  "private": true,
+  "workspaces": [
+    "athletics-platform/backend",
+    "athletics-platform/frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --prefix-colors \"cyan.bold,green.bold\" --names \"🔧 API,🎨 WEB\" \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "start": "concurrently --kill-others-on-fail --prefix-colors \"cyan.bold,green.bold\" --names \"🔧 API,🎨 WEB\" \"npm run backend:start\" \"npm run frontend:start\"",
+    "build": "npm run backend:build && npm run frontend:build",
+    "build:prod": "npm run clean && npm run backend:build && npm run frontend:build",
+    "clean": "npm run backend:clean && npm run frontend:clean",
+    "test": "npm run backend:test && npm run frontend:test",
+    "test:e2e": "npm run backend:test:e2e",
+    "lint": "npm run backend:lint && npm run frontend:lint",
+    "format": "npm run backend:format && npm run frontend:format",
+    "backend:dev": "cd athletics-platform/backend && npm run start:dev",
+    "backend:start": "cd athletics-platform/backend && npm run start:prod",
+    "backend:build": "cd athletics-platform/backend && npm run build",
+    "backend:test": "cd athletics-platform/backend && npm run test",
+    "backend:test:e2e": "cd athletics-platform/backend && npm run test:e2e",
+    "backend:lint": "cd athletics-platform/backend && npm run lint",
+    "backend:format": "cd athletics-platform/backend && npm run format",
+    "backend:clean": "cd athletics-platform/backend && rm -rf dist",
+    "frontend:dev": "cd athletics-platform/frontend && npm run dev",
+    "frontend:start": "cd athletics-platform/frontend && npm run start",
+    "frontend:build": "cd athletics-platform/frontend && npm run build",
+    "frontend:test": "cd athletics-platform/frontend && npm run test",
+    "frontend:lint": "cd athletics-platform/frontend && npm run lint",
+    "frontend:format": "cd athletics-platform/frontend && npm run format",
+    "frontend:clean": "cd athletics-platform/frontend && rm -rf .next",
+    "db:migrate": "cd athletics-platform/backend && npx prisma migrate dev",
+    "db:generate": "cd athletics-platform/backend && npx prisma generate",
+    "db:studio": "cd athletics-platform/backend && npx prisma studio",
+    "db:seed": "cd athletics-platform/backend && npm run seed",
+    "db:reset": "cd athletics-platform/backend && npx prisma migrate reset --force",
+    "install:all": "npm install && npm run backend:install && npm run frontend:install",
+    "backend:install": "cd athletics-platform/backend && npm install",
+    "frontend:install": "cd athletics-platform/frontend && npm install",
+    "setup": "npm run install:all && npm run db:migrate && npm run db:generate",
+    "setup:fresh": "npm run clean && npm run install:all && npm run db:reset && npm run db:seed",
+    "health": "npm run backend:health && npm run frontend:health",
+    "backend:health": "curl -f http://localhost:3002/health || echo 'Backend not running'",
+    "frontend:health": "curl -f http://localhost:3000 || echo 'Frontend not running'"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/athletics-platform"
+  },
+  "keywords": [
+    "athletics",
+    "sports",
+    "competition",
+    "management",
+    "nestjs",
+    "nextjs",
+    "typescript"
+  ],
+  "author": "Athletics Platform Team",
+  "license": "MIT"
+}

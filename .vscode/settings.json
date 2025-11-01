@@ -1,0 +1,75 @@
+{
+    "zencoder.enableRepoIndexing": true,
+    
+    // Athletics Platform - Professional Development Settings
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    
+    // TypeScript settings
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.suggest.autoImports": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    
+    // File associations
+    "files.associations": {
+        "*.css": "tailwindcss",
+        "*.prisma": "prisma"
+    },
+    
+    // CSS/Tailwind settings
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "tailwindCSS.includeLanguages": {
+        "plaintext": "html"
+    },
+    "tailwindCSS.experimental.classRegex": [
+        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+        ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    ],
+    
+    // File exclusions for better performance
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.next": true,
+        "**/coverage": true,
+        "**/.nyc_output": true
+    },
+    
+    // Search exclusions
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.next": true,
+        "**/coverage": true,
+        "**/.git": true
+    },
+    
+    // Terminal settings
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    
+    // Emmet settings
+    "emmet.includeLanguages": {
+        "typescript": "html",
+        "typescriptreact": "html"
+    },
+    
+    // Git settings
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    
+    // Extension recommendations
+    "extensions.ignoreRecommendations": false
+}
