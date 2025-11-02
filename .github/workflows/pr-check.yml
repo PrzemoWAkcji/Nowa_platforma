@@ -1,0 +1,96 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  pr-validation:
+    name: 🔍 PR Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better analysis
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: 📏 Check PR size
+        run: |
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          LINES_CHANGED=$(git diff --stat origin/${{ github.base_ref }}...HEAD | tail -1 | awk '{print $4+$6}')
+
+          echo "Files changed: $FILES_CHANGED"
+          echo "Lines changed: $LINES_CHANGED"
+
+          if [ $FILES_CHANGED -gt 100 ]; then
+            echo "⚠️ Warning: PR changes more than 100 files"
+          fi
+
+          if [ $LINES_CHANGED -gt 1000 ]; then
+            echo "⚠️ Warning: PR changes more than 1000 lines"
+          fi
+
+      - name: 📝 Check commit messages
+        run: |
+          COMMITS=$(git log origin/${{ github.base_ref }}..HEAD --oneline)
+          echo "$COMMITS"
+
+          # Check for conventional commits
+          if ! echo "$COMMITS" | grep -qE "^[a-z0-9]+ (feat|fix|docs|style|refactor|test|chore)(\(.+\))?:"; then
+            echo "ℹ️ Tip: Consider using conventional commits (feat:, fix:, docs:, etc.)"
+          fi
+
+      - name: 🔍 Check for TODOs
+        run: |
+          TODOS=$(git diff origin/${{ github.base_ref }}...HEAD | grep -i "TODO\|FIXME\|XXX" || true)
+          if [ -n "$TODOS" ]; then
+            echo "⚠️ Found TODOs in the changes:"
+            echo "$TODOS"
+          fi
+
+      - name: 📊 Code coverage comment
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        if: false # Enable when you have coverage
+        with:
+          lcov-file: ./coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  code-quality:
+    name: 📊 Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: 📦 Install dependencies (Backend)
+        working-directory: ./athletics-platform/backend
+        run: npm ci
+
+      - name: 📦 Install dependencies (Frontend)
+        working-directory: ./athletics-platform/frontend
+        run: npm ci
+
+      - name: 🔍 Type check (Backend)
+        working-directory: ./athletics-platform/backend
+        run: npx tsc --noEmit || echo "Type errors found in backend"
+
+      - name: 🔍 Type check (Frontend)
+        working-directory: ./athletics-platform/frontend
+        run: npx tsc --noEmit || echo "Type errors found in frontend"
+
+      - name: 📏 Check code formatting
+        run: |
+          cd athletics-platform/backend && npm run format:check || echo "Backend formatting issues"
+          cd ../frontend && npm run format:check || echo "Frontend formatting issues"

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Cookies - Athletics Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .log {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .success {
+        color: #28a745;
+      }
+      .error {
+        color: #dc3545;
+      }
+      .info {
+        color: #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🍪 Test Cookies - Athletics Platform</h1>
+
+      <div>
+        <button onclick="testLogin()">1. 🔐 Test Login</button>
+        <button onclick="testProfile()">2. 👤 Test Profile</button>
+        <button onclick="checkCookies()">3. 🍪 Check Cookies</button>
+        <button onclick="clearLogs()">🧹 Clear Logs</button>
+      </div>
+
+      <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+      function log(message, type = "info") {
+        const logs = document.getElementById("logs");
+        const timestamp = new Date().toLocaleTimeString();
+        const className =
+          type === "error" ? "error" : type === "success" ? "success" : "info";
+        logs.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+        logs.scrollTop = logs.scrollHeight;
+        console.log(message);
+      }
+
+      function clearLogs() {
+        document.getElementById("logs").innerHTML = "";
+      }
+
+      async function testLogin() {
+        log("🚀 Rozpoczynam test logowania...");
+
+        try {
+          const response = await axios.post(
+            "http://localhost:3001/auth/login",
+            {
+              email: "organizer@athletics.pl",
+              password: "password123",
+            },
+            {
+              withCredentials: true,
+            }
+          );
+
+          log("✅ Login successful!", "success");
+          log(`📧 User: ${response.data.user.email}`);
+          log(`🎭 Role: ${response.data.user.role}`);
+          log(`🔑 Token present: ${response.data.token ? "YES" : "NO"}`);
+
+          // Sprawdź cookies
+          log(`🍪 Document cookies: ${document.cookie || "NONE"}`);
+        } catch (error) {
+          log(
+            `❌ Login failed: ${error.response?.status} ${error.response?.statusText}`,
+            "error"
+          );
+          log(
+            `📝 Error details: ${JSON.stringify(error.response?.data)}`,
+            "error"
+          );
+        }
+      }
+
+      async function testProfile() {
+        log("👤 Testuję endpoint profilu...");
+
+        try {
+          const response = await axios.get(
+            "http://localhost:3001/auth/profile",
+            {
+              withCredentials: true,
+            }
+          );
+
+          log("✅ Profile endpoint works!", "success");
+          log(`📧 User: ${response.data.email}`);
+          log(`🎭 Role: ${response.data.role}`);
+        } catch (error) {
+          log(
+            `❌ Profile failed: ${error.response?.status} ${error.response?.statusText}`,
+            "error"
+          );
+          log(
+            `📝 Error details: ${JSON.stringify(error.response?.data)}`,
+            "error"
+          );
+        }
+      }
+
+      function checkCookies() {
+        log("🍪 Sprawdzam cookies...");
+
+        const cookies = document.cookie;
+        if (cookies) {
+          log(`📋 All cookies: ${cookies}`, "success");
+
+          // Parse cookies
+          const cookieArray = cookies.split(";").map((c) => c.trim());
+          cookieArray.forEach((cookie) => {
+            log(`  - ${cookie}`);
+          });
+        } else {
+          log("❌ No cookies found!", "error");
+        }
+
+        // Sprawdź localStorage
+        log("💾 Sprawdzam localStorage...");
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          log(`  - ${key}: ${value}`);
+        }
+      }
+
+      // Auto-check cookies on load
+      window.onload = function () {
+        log("🌐 Strona załadowana");
+        checkCookies();
+      };
+    </script>
+  </body>
+</html>

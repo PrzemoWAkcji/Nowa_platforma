@@ -1,0 +1,48 @@
+version: '3.8'
+
+# Development Docker Compose - z hot reload
+services:
+  backend:
+    build:
+      context: ./athletics-platform/backend
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: athletics-backend-dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - FRONTEND_URL=http://localhost:3000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    volumes:
+      - ./athletics-platform/backend:/app
+      - /app/node_modules
+      - /app/dist
+    command: npm run start:dev
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./athletics-platform/frontend
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: athletics-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    volumes:
+      - ./athletics-platform/frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    depends_on:
+      - backend
+    restart: unless-stopped

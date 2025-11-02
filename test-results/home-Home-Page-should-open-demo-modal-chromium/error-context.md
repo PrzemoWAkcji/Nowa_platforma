@@ -1,0 +1,101 @@
+# Page snapshot
+
+```yaml
+- main:
+  - navigation:
+    - link "Athletics Platform":
+      - /url: /
+    - button "Zawody"
+    - button "Demo"
+    - link "O nas":
+      - /url: "#"
+    - link "Kontakt":
+      - /url: "#"
+    - button "Zaloguj się"
+    - button "Dołącz"
+  - text: Platforma Lekkoatletyczna
+  - heading "Twoja Pasja Nasza Technologia" [level=1]
+  - paragraph: Nowoczesna platforma do zarządzania zawodami lekkoatletycznymi. Odkryj nadchodzące wydarzenia, śledź wyniki na żywo i bądź częścią społeczności.
+  - button "Przeglądaj Zawody"
+  - button "Zaloguj się"
+  - text: 150+ Zawodów rocznie 5000+ Aktywnych zawodników 98% Zadowolenia użytkowników 24/7 Dostępność systemu
+  - heading "Wyróżnione Zawody" [level=2]
+  - paragraph: Najważniejsze wydarzenia lekkoatletyczne, które nie mogą Cię ominąć
+  - text: Mistrzostwa LIVE
+  - heading "Mistrzostwa Polski Seniorów 2025" [level=3]
+  - text: Stadion Śląski, Chorzów 15 lipca 2025 Rejestracja otwarta 245/500 uczestników
+  - button "Zobacz szczegóły"
+  - button "Zapisz się"
+  - text: Memoriał LIVE
+  - heading "Memoriał Janusza Kusocińskiego" [level=3]
+  - text: Stadion Narodowy, Warszawa 20 czerwca 2025 Rejestracja otwarta 156/300 uczestników
+  - button "Zobacz szczegóły"
+  - button "Zapisz się"
+  - heading "Wszystkie Zawody" [level=2]
+  - paragraph: Znajdź zawody, które Cię interesują i weź udział w emocjonujących rywalizacjach
+  - textbox "Szukaj zawodów lub lokalizacji..."
+  - combobox: Wszystkie statusy
+  - combobox: Wszystkie kategorie
+  - text: Mistrzostwa LIVE
+  - heading "Mistrzostwa Polski Seniorów 2025" [level=3]
+  - text: Rejestracja otwarta Stadion Śląski, Chorzów 15 lipca 2025 245/500
+  - button "Zobacz szczegóły"
+  - text: Memoriał LIVE
+  - heading "Memoriał Janusza Kusocińskiego" [level=3]
+  - text: Rejestracja otwarta Stadion Narodowy, Warszawa 20 czerwca 2025 156/300
+  - button "Zobacz szczegóły"
+  - text: Młodzież
+  - heading "Młodzieżowe Mistrzostwa Województwa" [level=3]
+  - text: Rejestracja otwarta MOSiR, Kraków 25 maja 2025 89/200
+  - button "Zobacz szczegóły"
+  - text: Bieg
+  - heading "Bieg Uliczny \"Wiosna 2025\"" [level=3]
+  - text: Zakończone Park Jordana, Kraków 12 kwietnia 2025 450/500
+  - button "Zobacz szczegóły"
+  - heading "Gotowy na następny poziom?" [level=2]
+  - paragraph: Dołącz do tysięcy zawodników, którzy już korzystają z naszej platformy. Zarządzaj swoimi startami, śledź wyniki i rozwijaj swoją karierę sportową.
+  - button "Zaloguj się"
+  - button "Dowiedz się więcej"
+  - heading "🧪 Konta Testowe" [level=3]
+  - text: 👑 Administrator admin@athletics.pl password123
+  - button "Zaloguj jako Admin"
+  - text: 🏃‍♂️ Trener coach@athletics.pl password123
+  - button "Zaloguj jako Trener"
+  - text: 🏆 Zawodnik athlete@athletics.pl password123
+  - button "Zaloguj jako Zawodnik"
+  - text: 📋 Organizator organizer@athletics.pl password123
+  - button "Zaloguj jako Organizator"
+  - paragraph: Kliknij przycisk "Zaloguj jako..." aby natychmiast przetestować daną rolę, lub użyj tych danych w modalu logowania.
+  - heading "Demo Platformy" [level=2]
+  - button
+  - heading "Poznaj możliwości naszej platformy" [level=3]
+  - paragraph: Nowoczesne rozwiązanie do zarządzania zawodami lekkoatletycznymi
+  - heading "Zarządzanie zawodami" [level=4]
+  - paragraph: Twórz i zarządzaj zawodami lekkoatletycznymi z łatwością
+  - heading "Rejestracja uczestników" [level=4]
+  - paragraph: Automatyczna rejestracja zawodników online
+  - heading "Wyniki na żywo" [level=4]
+  - paragraph: Śledzenie wyników w czasie rzeczywistym
+  - heading "Integracja z FinishLynx" [level=4]
+  - paragraph: Automatyczne pobieranie czasów z systemu pomiarowego
+  - heading "Demo Video" [level=4]
+  - paragraph: Zobacz jak działa nasza platforma w praktyce
+  - button "Odtwórz demo (3:45)"
+  - heading "Korzyści dla organizatorów" [level=4]
+  - list:
+    - listitem: Oszczędność czasu przy organizacji zawodów
+    - listitem: Automatyzacja procesów rejestracji
+    - listitem: Profesjonalna prezentacja wyników
+    - listitem: Integracja z systemami pomiarowymi
+  - heading "🧪 Konta testowe do wypróbowania" [level=4]
+  - text: 👑 Administrator admin@athletics.pl / admin123 🏃‍♂️ Trener coach@athletics.pl / coach123 🏆 Zawodnik athlete@athletics.pl / athlete123 📋 Organizator organizer@athletics.pl / organizer123
+  - paragraph: Każda rola ma różne uprawnienia i widoki w systemie. Kliknij "Zaloguj się" i wybierz rolę do przetestowania.
+  - button "Zamknij"
+  - button "Rozpocznij testowanie"
+- region "Notifications alt+T"
+- button "Open Tanstack query devtools":
+  - img
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+```

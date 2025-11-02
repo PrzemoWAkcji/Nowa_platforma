@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Test Dashboard API</h1>
+
+      <div>
+        <button onclick="testLogin()">1. Test Logowania</button>
+        <button onclick="testCompetitions()">2. Test Pobierania Zawodów</button>
+        <button onclick="testDashboard()">3. Test Pełnego Dashboard</button>
+        <button onclick="clearResults()">Wyczyść</button>
+      </div>
+
+      <div id="results"></div>
+    </div>
+
+    <script>
+      let authToken = null;
+      let currentUser = null;
+
+      function addResult(message, type = "info") {
+        const results = document.getElementById("results");
+        const div = document.createElement("div");
+        div.className = `result ${type}`;
+        div.innerHTML = message;
+        results.appendChild(div);
+      }
+
+      function clearResults() {
+        document.getElementById("results").innerHTML = "";
+      }
+
+      async function testLogin() {
+        addResult("🔍 Testowanie logowania...", "info");
+
+        try {
+          const response = await fetch("http://localhost:3001/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              email: "organizer@athletics.pl",
+              password: "password123",
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            authToken = data.token;
+            currentUser = data.user;
+
+            addResult(
+              `✅ Logowanie udane!<br>
+                        Użytkownik: ${data.user.email}<br>
+                        Rola: ${data.user.role}<br>
+                        ID: ${data.user.id}<br>
+                        Token: ${data.token.substring(0, 20)}...`,
+              "success"
+            );
+          } else {
+            const error = await response.text();
+            addResult(
+              `❌ Błąd logowania: ${response.status} - ${error}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          addResult(`❌ Błąd sieci: ${error.message}`, "error");
+        }
+      }
+
+      async function testCompetitions() {
+        if (!authToken) {
+          addResult("❌ Najpierw zaloguj się!", "error");
+          return;
+        }
+
+        addResult("🔍 Testowanie pobierania zawodów...", "info");
+
+        try {
+          const response = await fetch("http://localhost:3001/competitions", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            const competitions = await response.json();
+
+            addResult(`✅ Pobrano ${competitions.length} zawodów:`, "success");
+
+            competitions.forEach((comp, index) => {
+              const isUserCompetition = comp.createdById === currentUser.id;
+              addResult(
+                `${index + 1}. <strong>${comp.name}</strong><br>
+                            Status: ${comp.status}<br>
+                            Lokalizacja: ${comp.location}<br>
+                            Data: ${new Date(comp.startDate).toLocaleDateString("pl-PL")}<br>
+                            Utworzony przez: ${comp.createdById}<br>
+                            Czy to zawody użytkownika: ${isUserCompetition ? "✅" : "❌"}<br>
+                            Rejestracje: ${comp._count?.registrations || 0}`,
+                "info"
+              );
+            });
+
+            // Filtrowanie zawodów organizatora
+            const userCompetitions = competitions.filter(
+              (c) => c.createdById === currentUser.id
+            );
+            addResult(
+              `📊 Statystyki organizatora:<br>
+                        Wszystkie zawody: ${competitions.length}<br>
+                        Zawody organizatora: ${userCompetitions.length}<br>
+                        Aktywne zawody: ${userCompetitions.filter((c) => c.status === "REGISTRATION_OPEN" || c.status === "PUBLISHED").length}`,
+              "success"
+            );
+          } else {
+            const error = await response.text();
+            addResult(
+              `❌ Błąd pobierania zawodów: ${response.status} - ${error}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          addResult(`❌ Błąd sieci: ${error.message}`, "error");
+        }
+      }
+
+      async function testDashboard() {
+        addResult("🔍 Testowanie pełnego dashboard...", "info");
+
+        // Test 1: Logowanie
+        await testLogin();
+
+        // Czekaj chwilę
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Test 2: Pobieranie zawodów
+        await testCompetitions();
+
+        // Test 3: Sprawdzenie frontendu
+        addResult("🔍 Sprawdzanie frontendu...", "info");
+        try {
+          const frontendResponse = await fetch(
+            "http://localhost:3000/dashboard"
+          );
+          if (frontendResponse.ok) {
+            addResult("✅ Frontend dashboard odpowiada poprawnie", "success");
+          } else {
+            addResult(
+              `❌ Frontend dashboard błąd: ${frontendResponse.status}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          addResult(`❌ Frontend niedostępny: ${error.message}`, "error");
+        }
+      }
+    </script>
+  </body>
+</html>

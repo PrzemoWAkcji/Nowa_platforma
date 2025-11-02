@@ -1,36 +1,36 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Header,
+  Param,
+  Patch,
+  Post,
   Req,
   Res,
-  Header,
-  UseInterceptors,
   UploadedFile,
   UploadedFiles,
-  BadRequestException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
+import * as iconv from 'iconv-lite';
+import { Public } from '../auth/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { FinishlynxService } from '../finishlynx/finishlynx.service';
 import { CompetitionsService } from './competitions.service';
 import { CreateCompetitionDto } from './dto/create-competition.dto';
-import { UpdateCompetitionDto } from './dto/update-competition.dto';
 import {
   ImportStartListDto,
   StartListFormat,
 } from './dto/import-startlist.dto';
-import { FinishlynxService } from '../finishlynx/finishlynx.service';
+import { UpdateCompetitionDto } from './dto/update-competition.dto';
 import { StartListImportService } from './startlist-import.service';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Public } from '../auth/decorators/public.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Response } from 'express';
-import * as iconv from 'iconv-lite';
 
 @Controller('competitions')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -130,7 +130,7 @@ export class CompetitionsController {
   @UseInterceptors(FileInterceptor('file'))
   async importStartList(
     @Param('id') competitionId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Multer.File,
     @Body('format') format?: string,
     @Body('updateExisting') updateExisting?: string,
     @Body('createMissingAthletes') createMissingAthletes?: string,
@@ -182,11 +182,12 @@ export class CompetitionsController {
     const importDto: ImportStartListDto = {
       competitionId,
       csvData: body.csvData,
-      format: body.format === 'international'
-        ? StartListFormat.ROSTER
-        : body.format === 'PZLA'
-        ? StartListFormat.PZLA
-        : StartListFormat.AUTO,
+      format:
+        body.format === 'international'
+          ? StartListFormat.ROSTER
+          : body.format === 'PZLA'
+            ? StartListFormat.PZLA
+            : StartListFormat.AUTO,
     };
 
     return this.startListImportService.importStartList(importDto);
@@ -200,20 +201,25 @@ export class CompetitionsController {
 
   @Post(':id/logos')
   @Roles('ADMIN', 'ORGANIZER')
-  @UseInterceptors(FilesInterceptor('logos', 5, {
-    limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB
-    },
-    fileFilter: (req, file, callback) => {
-      if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|svg\+xml|webp)$/)) {
-        return callback(new BadRequestException('Tylko pliki obrazów są dozwolone'), false);
-      }
-      callback(null, true);
-    },
-  }))
+  @UseInterceptors(
+    FilesInterceptor('logos', 5, {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|svg\+xml|webp)$/)) {
+          return callback(
+            new BadRequestException('Tylko pliki obrazów są dozwolone'),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+    }),
+  )
   async uploadLogos(
     @Param('id') competitionId: string,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: Multer.File[],
   ) {
     if (!files || files.length === 0) {
       throw new BadRequestException('Nie przesłano żadnych plików');

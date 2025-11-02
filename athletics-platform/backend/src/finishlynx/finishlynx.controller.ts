@@ -1,27 +1,26 @@
 import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Get,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
+  Body,
+  Controller,
+  Get,
   Param,
+  Post,
   Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { UserRole } from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
-import { FinishlynxService } from './finishlynx.service';
 import {
-  ImportFinishlynxDto,
-  ImportFileDto,
   FinishlynxAthleteResultDto,
+  ImportFileDto,
+  ImportFinishlynxDto,
 } from './dto/import-finishlynx.dto';
+import { FinishlynxService } from './finishlynx.service';
 
 @Controller('finishlynx')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -38,7 +37,7 @@ export class FinishlynxController {
   @Roles(UserRole.ADMIN, UserRole.COACH)
   @UseInterceptors(FileInterceptor('file'))
   async importFromFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Multer.File,
     @Body('competitionId') competitionId?: string,
   ) {
     if (!file) {
@@ -78,7 +77,7 @@ export class FinishlynxController {
   @Post('validate-file')
   @Roles(UserRole.ADMIN, UserRole.COACH)
   @UseInterceptors(FileInterceptor('file'))
-  validateFile(@UploadedFile() file: Express.Multer.File) {
+  validateFile(@UploadedFile() file: Multer.File) {
     if (!file) {
       throw new BadRequestException('Nie przesłano pliku');
     }
@@ -114,7 +113,7 @@ export class FinishlynxController {
   @Roles(UserRole.ADMIN, UserRole.COACH)
   @UseInterceptors(FileInterceptor('file'))
   async previewFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Multer.File,
     @Body('competitionId') competitionId?: string,
   ) {
     if (!file) {

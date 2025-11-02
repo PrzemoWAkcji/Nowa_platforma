@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Frontend Logowania</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>Test Frontend Logowania</h1>
+    <button onclick="testFrontendLogin()">Test Frontend Login</button>
+    <div id="result"></div>
+
+    <script>
+      // Symuluj Zustand store
+      let authState = {
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      };
+
+      function setState(newState) {
+        authState = { ...authState, ...newState };
+        console.log("🔄 Nowy stan:", authState);
+        updateUI();
+      }
+
+      function updateUI() {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `
+                <h3>Stan Auth:</h3>
+                <p>Authenticated: ${authState.isAuthenticated ? "✅" : "❌"}</p>
+                <p>User: ${authState.user?.email || "None"}</p>
+                <p>Role: ${authState.user?.role || "None"}</p>
+                <p>Loading: ${authState.isLoading ? "⏳" : "✅"}</p>
+                <p>Error: ${authState.error || "None"}</p>
+            `;
+      }
+
+      async function testFrontendLogin() {
+        console.log("🚀 Rozpoczynam test frontend logowania...");
+
+        setState({ isLoading: true, error: null });
+
+        try {
+          console.log("🔐 Próba logowania: organizer@athletics.pl");
+
+          const response = await axios.post(
+            "http://localhost:3001/auth/login",
+            {
+              email: "organizer@athletics.pl",
+              password: "password123",
+            },
+            {
+              withCredentials: true,
+            }
+          );
+
+          console.log("🍪 Sprawdzam cookies po logowaniu:", document.cookie);
+
+          const { user, token } = response.data;
+
+          console.log("✅ Logowanie udane:", {
+            user: user.email,
+            role: user.role,
+          });
+
+          const newState = {
+            user,
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          };
+
+          console.log("🔄 Ustawiam nowy stan:", newState);
+          setState(newState);
+
+          // Sprawdź czy stan został ustawiony
+          setTimeout(async () => {
+            console.log("📊 Aktualny stan po logowaniu:", authState);
+
+            // Test API profilu z cookies
+            try {
+              console.log("🔍 Testuję API profilu z cookies...");
+              const profileResponse = await axios.get(
+                "http://localhost:3001/auth/profile",
+                {
+                  withCredentials: true,
+                }
+              );
+              console.log("✅ API profilu działa:", profileResponse.data);
+            } catch (error) {
+              console.log(
+                "❌ API profilu nie działa:",
+                error.response?.status,
+                error.response?.data
+              );
+            }
+
+            if (authState.isAuthenticated && authState.user) {
+              console.log("✅ Przekierowuję do dashboard...");
+              setTimeout(() => {
+                window.location.href = "http://localhost:3000/dashboard";
+              }, 1000);
+            } else {
+              console.log(
+                "❌ Użytkownik nie jest zalogowany, nie przekierowuję"
+              );
+            }
+          }, 100);
+        } catch (error) {
+          console.error(
+            "❌ Błąd logowania:",
+            error.response?.data || error.message
+          );
+          setState({
+            isLoading: false,
+            error: error.response?.data?.message || "Błąd logowania",
+            isAuthenticated: false,
+          });
+        }
+      }
+
+      // Inicjalizuj UI
+      updateUI();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Logowania</title>
+  </head>
+  <body>
+    <h1>Test Logowania</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="result"></div>
+
+    <script>
+      async function testLogin() {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "Testowanie logowania...";
+
+        try {
+          const response = await fetch("http://localhost:3001/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              email: "organizer@athletics.pl",
+              password: "password123",
+            }),
+          });
+
+          const data = await response.json();
+          console.log("Response:", data);
+
+          if (response.ok) {
+            resultDiv.innerHTML = `
+                        <h3>✅ Logowanie udane!</h3>
+                        <p>Email: ${data.user.email}</p>
+                        <p>Rola: ${data.user.role}</p>
+                        <p>Token: ${data.token ? "PRESENT" : "MISSING"}</p>
+                    `;
+
+            // Test przekierowania
+            setTimeout(() => {
+              window.location.href = "http://localhost:3000/dashboard";
+            }, 2000);
+          } else {
+            resultDiv.innerHTML = `❌ Błąd: ${data.message}`;
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          resultDiv.innerHTML = `❌ Błąd: ${error.message}`;
+        }
+      }
+    </script>
+  </body>
+</html>

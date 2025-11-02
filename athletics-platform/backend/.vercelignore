@@ -1,0 +1,22 @@
+# Test files
+src/**/*.spec.ts
+src/**/*.test.ts
+src/**/test-*.ts
+src/**/demo-*.ts
+
+# Test directories
+test/
+tests/
+coverage/
+
+# Development files
+*.md
+.env.local
+.env.development
+
+# Logs
+logs/
+*.log
+
+# Uploads (should use cloud storage in production)
+uploads/

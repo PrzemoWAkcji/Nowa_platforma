@@ -1,24 +1,24 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
-  UseInterceptors,
   UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { RecordsService } from './records.service';
-import { CreateRecordDto } from './dto/create-record.dto';
-import { UpdateRecordDto } from './dto/update-record.dto';
+import { Public } from '../auth/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Public } from '../auth/decorators/public.decorator';
+import { CreateRecordDto } from './dto/create-record.dto';
+import { UpdateRecordDto } from './dto/update-record.dto';
+import { RecordsService } from './records.service';
 
 @Controller('records')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -105,7 +105,7 @@ export class RecordsController {
   @Post('import')
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file'))
-  async importRecords(@UploadedFile() file: Express.Multer.File) {
+  async importRecords(@UploadedFile() file: Multer.File) {
     if (!file) {
       throw new Error('No file uploaded');
     }

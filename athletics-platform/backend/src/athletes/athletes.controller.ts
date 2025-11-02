@@ -1,25 +1,24 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { Public } from '../auth/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { AthletesService } from './athletes.service';
 import { CreateAthleteDto } from './dto/create-athlete.dto';
 import { UpdateAthleteDto } from './dto/update-athlete.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('athletes')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -87,7 +86,7 @@ export class AthletesController {
   @Roles('ADMIN', 'ORGANIZER')
   @UseInterceptors(FileInterceptor('file'))
   async importFromCsv(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Multer.File,
     @Body('format') format: 'pzla' | 'international' | 'auto' = 'auto',
     @Body('updateExisting') updateExisting: boolean = false,
   ) {

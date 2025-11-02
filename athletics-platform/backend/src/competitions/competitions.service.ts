@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateCompetitionDto } from './dto/create-competition.dto';
-import { UpdateCompetitionDto } from './dto/update-competition.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateCompetitionDto } from './dto/create-competition.dto';
+import { UpdateCompetitionDto } from './dto/update-competition.dto';
 
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
@@ -22,7 +26,7 @@ export class CompetitionsService {
 
     // Znajdź pierwszego użytkownika admin lub utwórz zawody bez createdById
     const adminUser = await this.prisma.user.findFirst({
-      where: { role: 'ADMIN' }
+      where: { role: 'ADMIN' },
     });
 
     if (!adminUser) {
@@ -140,39 +144,50 @@ export class CompetitionsService {
 
     // Sprawdź czy są rejestracje
     if (competition.registrations && competition.registrations.length > 0) {
-      throw new BadRequestException('Nie można usunąć zawodów, które mają rejestracje. Usuń najpierw wszystkie rejestracje.');
+      throw new BadRequestException(
+        'Nie można usunąć zawodów, które mają rejestracje. Usuń najpierw wszystkie rejestracje.',
+      );
     }
 
     // Sprawdź czy są wyniki w konkurencjach
-    const hasResults = competition.events.some(event => 
-      event.results && event.results.length > 0
+    const hasResults = competition.events.some(
+      (event) => event.results && event.results.length > 0,
     );
-    
+
     if (hasResults) {
-      throw new BadRequestException('Nie można usunąć zawodów, które mają wyniki. Usuń najpierw wszystkie wyniki.');
+      throw new BadRequestException(
+        'Nie można usunąć zawodów, które mają wyniki. Usuń najpierw wszystkie wyniki.',
+      );
     }
 
     // Sprawdź czy są rejestracje zespołów sztafetowych
-    const hasRelayRegistrations = competition.events.some(event => 
-      event.relayTeamRegistrations && event.relayTeamRegistrations.length > 0
+    const hasRelayRegistrations = competition.events.some(
+      (event) =>
+        event.relayTeamRegistrations && event.relayTeamRegistrations.length > 0,
     );
-    
+
     if (hasRelayRegistrations) {
-      throw new BadRequestException('Nie można usunąć zawodów, które mają rejestracje zespołów sztafetowych. Usuń najpierw wszystkie zespoły.');
+      throw new BadRequestException(
+        'Nie można usunąć zawodów, które mają rejestracje zespołów sztafetowych. Usuń najpierw wszystkie zespoły.',
+      );
     }
 
     // Sprawdź czy są wyniki zespołów sztafetowych
-    const hasRelayResults = competition.relayTeams.some(team => 
-      team.results && team.results.length > 0
+    const hasRelayResults = competition.relayTeams.some(
+      (team) => team.results && team.results.length > 0,
     );
-    
+
     if (hasRelayResults) {
-      throw new BadRequestException('Nie można usunąć zawodów, które mają wyniki zespołów sztafetowych. Usuń najpierw wszystkie wyniki.');
+      throw new BadRequestException(
+        'Nie można usunąć zawodów, które mają wyniki zespołów sztafetowych. Usuń najpierw wszystkie wyniki.',
+      );
     }
 
     // Sprawdź czy są zespoły sztafetowe
     if (competition.relayTeams && competition.relayTeams.length > 0) {
-      throw new BadRequestException('Nie można usunąć zawodów, które mają zespoły sztafetowe. Usuń najpierw wszystkie zespoły.');
+      throw new BadRequestException(
+        'Nie można usunąć zawodów, które mają zespoły sztafetowe. Usuń najpierw wszystkie zespoły.',
+      );
     }
 
     // Jeśli wszystko jest w porządku, usuń zawody
@@ -259,22 +274,22 @@ export class CompetitionsService {
    */
   async updateCompetitionStatuses() {
     const now = new Date();
-    
+
     // Otwórz rejestrację dla zawodów, gdzie data rozpoczęcia rejestracji już minęła
     await this.prisma.competition.updateMany({
       where: {
         status: 'PUBLISHED',
         registrationStartDate: {
-          lte: now
+          lte: now,
         },
         OR: [
           { registrationEndDate: null },
-          { registrationEndDate: { gte: now } }
-        ]
+          { registrationEndDate: { gte: now } },
+        ],
       },
       data: {
-        status: 'REGISTRATION_OPEN'
-      }
+        status: 'REGISTRATION_OPEN',
+      },
     });
 
     // Zamknij rejestrację dla zawodów, gdzie data zakończenia rejestracji już minęła
@@ -282,12 +297,12 @@ export class CompetitionsService {
       where: {
         status: 'REGISTRATION_OPEN',
         registrationEndDate: {
-          lt: now
-        }
+          lt: now,
+        },
       },
       data: {
-        status: 'REGISTRATION_CLOSED'
-      }
+        status: 'REGISTRATION_CLOSED',
+      },
     });
 
     // Rozpocznij zawody, które już się zaczęły
@@ -295,15 +310,15 @@ export class CompetitionsService {
       where: {
         status: { in: ['REGISTRATION_CLOSED', 'PUBLISHED'] },
         startDate: {
-          lte: now
+          lte: now,
         },
         endDate: {
-          gte: now
-        }
+          gte: now,
+        },
       },
       data: {
-        status: 'ONGOING'
-      }
+        status: 'ONGOING',
+      },
     });
 
     // Zakończ zawody, które już się skończyły
@@ -311,12 +326,12 @@ export class CompetitionsService {
       where: {
         status: 'ONGOING',
         endDate: {
-          lt: now
-        }
+          lt: now,
+        },
       },
       data: {
-        status: 'COMPLETED'
-      }
+        status: 'COMPLETED',
+      },
     });
 
     return { message: 'Statusy zawodów zostały zaktualizowane' };
@@ -325,7 +340,7 @@ export class CompetitionsService {
   /**
    * Przesyła logo dla zawodów
    */
-  async uploadLogos(competitionId: string, files: Express.Multer.File[]) {
+  async uploadLogos(competitionId: string, files: Multer.File[]) {
     // Sprawdź czy zawody istnieją
     const competition = await this.prisma.competition.findUnique({
       where: { id: competitionId },
@@ -340,7 +355,9 @@ export class CompetitionsService {
 
     // Sprawdź limit (maksymalnie 5 logo)
     if (existingLogos.length + files.length > 5) {
-      throw new BadRequestException(`Można przesłać maksymalnie 5 logo. Obecnie masz ${existingLogos.length} logo.`);
+      throw new BadRequestException(
+        `Można przesłać maksymalnie 5 logo. Obecnie masz ${existingLogos.length} logo.`,
+      );
     }
 
     // Utwórz folder na logo jeśli nie istnieje
@@ -378,7 +395,7 @@ export class CompetitionsService {
 
     // Zaktualizuj bazę danych
     const updatedLogos = [...existingLogos, ...newLogos];
-    
+
     const updatedCompetition = await this.prisma.competition.update({
       where: { id: competitionId },
       data: { logos: updatedLogos },
@@ -404,14 +421,19 @@ export class CompetitionsService {
     }
 
     const existingLogos = (competition.logos as any[]) || [];
-    const logoToDelete = existingLogos.find(logo => logo.id === logoId);
+    const logoToDelete = existingLogos.find((logo) => logo.id === logoId);
 
     if (!logoToDelete) {
       throw new NotFoundException('Logo nie zostało znalezione');
     }
 
     // Usuń plik z dysku
-    const filePath = path.join(process.cwd(), 'uploads', 'logos', logoToDelete.filename);
+    const filePath = path.join(
+      process.cwd(),
+      'uploads',
+      'logos',
+      logoToDelete.filename,
+    );
     try {
       await unlink(filePath);
     } catch (error) {
@@ -419,7 +441,7 @@ export class CompetitionsService {
     }
 
     // Usuń logo z listy
-    const updatedLogos = existingLogos.filter(logo => logo.id !== logoId);
+    const updatedLogos = existingLogos.filter((logo) => logo.id !== logoId);
 
     // Zaktualizuj bazę danych
     await this.prisma.competition.update({
