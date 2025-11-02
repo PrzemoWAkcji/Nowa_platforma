@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npx nest build",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -21,7 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:silent": "jest --silent",
     "seed": "ts-node prisma/seed.ts",
-    "vercel-build": "prisma generate && prisma migrate deploy && nest build",
+    "vercel-build": "prisma generate && prisma migrate deploy && npm run build",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -58,7 +58,6 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "winston": "^3.17.0",
-    "@nestjs/cli": "^11.0.0",
     "prisma": "^6.11.0",
     "typescript": "^5.7.3"
   },
