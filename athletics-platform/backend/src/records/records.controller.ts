@@ -12,7 +12,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as multer from 'multer';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -106,7 +105,7 @@ export class RecordsController {
   @Post('import')
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file'))
-  async importRecords(@UploadedFile() file: multer.File) {
+  async importRecords(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new Error('No file uploaded');
     }

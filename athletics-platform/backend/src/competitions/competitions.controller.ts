@@ -18,7 +18,6 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import * as iconv from 'iconv-lite';
-import * as multer from 'multer';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -131,7 +130,7 @@ export class CompetitionsController {
   @UseInterceptors(FileInterceptor('file'))
   async importStartList(
     @Param('id') competitionId: string,
-    @UploadedFile() file: multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @Body('format') format?: string,
     @Body('updateExisting') updateExisting?: string,
     @Body('createMissingAthletes') createMissingAthletes?: string,
@@ -220,7 +219,7 @@ export class CompetitionsController {
   )
   async uploadLogos(
     @Param('id') competitionId: string,
-    @UploadedFiles() files: multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (!files || files.length === 0) {
       throw new BadRequestException('Nie przesłano żadnych plików');

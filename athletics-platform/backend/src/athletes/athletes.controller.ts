@@ -12,7 +12,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as multer from 'multer';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -87,7 +86,7 @@ export class AthletesController {
   @Roles('ADMIN', 'ORGANIZER')
   @UseInterceptors(FileInterceptor('file'))
   async importFromCsv(
-    @UploadedFile() file: multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @Body('format') format: 'pzla' | 'international' | 'auto' = 'auto',
     @Body('updateExisting') updateExisting: boolean = false,
   ) {

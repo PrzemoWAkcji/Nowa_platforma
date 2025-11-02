@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
-import * as multer from 'multer';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -38,7 +37,7 @@ export class FinishlynxController {
   @Roles(UserRole.ADMIN, UserRole.COACH)
   @UseInterceptors(FileInterceptor('file'))
   async importFromFile(
-    @UploadedFile() file: multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @Body('competitionId') competitionId?: string,
   ) {
     if (!file) {
@@ -78,7 +77,7 @@ export class FinishlynxController {
   @Post('validate-file')
   @Roles(UserRole.ADMIN, UserRole.COACH)
   @UseInterceptors(FileInterceptor('file'))
-  validateFile(@UploadedFile() file: multer.File) {
+  validateFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('Nie przesłano pliku');
     }
@@ -114,7 +113,7 @@ export class FinishlynxController {
   @Roles(UserRole.ADMIN, UserRole.COACH)
   @UseInterceptors(FileInterceptor('file'))
   async previewFile(
-    @UploadedFile() file: multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @Body('competitionId') competitionId?: string,
   ) {
     if (!file) {

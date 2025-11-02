@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
-import * as multer from 'multer';
 import * as path from 'path';
 import { promisify } from 'util';
 import { PrismaService } from '../prisma/prisma.service';
@@ -341,7 +340,7 @@ export class CompetitionsService {
   /**
    * Przesyła logo dla zawodów
    */
-  async uploadLogos(competitionId: string, files: multer.File[]) {
+  async uploadLogos(competitionId: string, files: Express.Multer.File[]) {
     // Sprawdź czy zawody istnieją
     const competition = await this.prisma.competition.findUnique({
       where: { id: competitionId },
