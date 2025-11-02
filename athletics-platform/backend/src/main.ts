@@ -1,6 +1,5 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -30,8 +29,7 @@ async function bootstrap() {
   // Global interceptors
   app.useGlobalInterceptors(new PerformanceInterceptor());
 
-  // Global guards
-  app.useGlobalGuards(app.get(ThrottlerGuard));
+  // Note: ThrottlerGuard is already registered globally in AppModule as APP_GUARD
 
   // CORS configuration
   app.enableCors({
