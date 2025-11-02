@@ -15,8 +15,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect();
-
-    // Ustaw kodowanie UTF-8 dla SQLite
-    await this.$executeRaw`PRAGMA encoding = 'UTF-8'`;
+    // PostgreSQL używa UTF-8 domyślnie, więc PRAGMA nie jest potrzebne
   }
 }
