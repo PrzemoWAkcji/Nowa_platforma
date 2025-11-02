@@ -1,0 +1,29 @@
+/* ===================================
+   ATHLETICS PLATFORM - GLOBAL STYLES
+   =================================== */
+
+/* Tailwind CSS imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import modular stylesheets */
+@import '../styles/variables.css';
+@import '../styles/base.css';
+@import '../styles/animations.css';
+@import '../styles/components.css';
+
+/* Base layer with Tailwind utilities */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}

@@ -1,0 +1,271 @@
+/* PDF Generator styles */
+.pdfElement {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-family: 'Arial', sans-serif !important;
+  line-height: 1.4 !important;
+}
+
+.container {
+  /* Container for global styles */
+  max-width: 794px;
+  margin: 0 auto;
+  font-size: 8px;
+  line-height: 1.0;
+}
+
+/* Professional table styling */
+.container table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+  font-size: 10px !important;
+}
+
+.container th,
+.container td {
+  border: 1px solid #000000 !important;
+  padding: 4px 2px !important;
+  vertical-align: middle !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+.container th {
+  background-color: #f0f0f0 !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  font-size: 11px !important;
+}
+
+/* Column widths */
+.container th:nth-child(1),
+.container td:nth-child(1) { width: 30px !important; } /* Lp */
+
+.container th:nth-child(2),
+.container td:nth-child(2) { width: 30px !important; } /* Nr */
+
+.container th:nth-child(3),
+.container td:nth-child(3) { width: auto !important; } /* Imię i nazwisko */
+
+.container th:nth-child(4),
+.container td:nth-child(4) { width: 50px !important; } /* Rocznik */
+
+.container th:nth-child(5),
+.container td:nth-child(5) { width: auto !important; } /* Klub */
+
+.container th:nth-child(6),
+.container td:nth-child(6) { width: 50px !important; } /* PB */
+
+.container th:nth-child(7),
+.container td:nth-child(7) { width: 50px !important; } /* SB */
+
+/* Zebra striping for better readability */
+.container .row-even,
+.container .bg-white {
+  background-color: #ffffff !important;
+}
+
+.container .row-odd,
+.container .bg-gray-50 {
+  background-color: #f9f9f9 !important;
+}
+
+/* Text formatting for athlete data */
+.container .font-bold {
+  font-weight: bold !important;
+}
+
+.container .font-medium {
+  font-weight: 500 !important;
+}
+
+.container .font-mono {
+  font-family: 'Courier New', monospace !important;
+}
+
+.container .text-gray-400 {
+  color: #999999 !important;
+}
+
+.container .text-gray-600 {
+  color: #666666 !important;
+}
+
+.container .truncate {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.container .leading-tight {
+  line-height: 1.1 !important;
+}
+
+/* Professional startlist styling */
+.professionalStartlist {
+  font-family: 'Arial', sans-serif !important;
+  line-height: 1.0 !important;
+  font-size: 8px !important;
+}
+
+.professionalStartlist .header {
+  text-align: center !important;
+  margin-bottom: 12px !important;
+}
+
+.professionalStartlist .competitionTitle {
+  font-size: 14px !important;
+  font-weight: bold !important;
+  margin-bottom: 3px !important;
+}
+
+.professionalStartlist .eventTitle {
+  font-size: 12px !important;
+  font-weight: bold !important;
+  margin-top: 4px !important;
+}
+
+.professionalStartlist .athleteTable {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 2px solid #000000 !important;
+  margin: 16px 0 !important;
+}
+
+.professionalStartlist .athleteTable th {
+  background-color: #f0f0f0 !important;
+  border: 1px solid #000000 !important;
+  padding: 6px 4px !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  text-align: center !important;
+}
+
+.professionalStartlist .athleteTable td {
+  border: 1px solid #cccccc !important;
+  padding: 2px !important;
+  font-size: 8px !important;
+  vertical-align: middle !important;
+}
+
+.professionalStartlist .athleteRow:nth-child(even) {
+  background-color: #fafafa !important;
+}
+
+.professionalStartlist .athleteRow:nth-child(odd) {
+  background-color: #ffffff !important;
+}
+
+.professionalStartlist .athleteName {
+  font-weight: 500 !important;
+}
+
+.professionalStartlist .athleteTime {
+  font-family: 'Courier New', monospace !important;
+  text-align: center !important;
+}
+
+.professionalStartlist .footer {
+  margin-top: 12px !important;
+  font-size: 8px !important;
+  color: #666666 !important;
+}
+
+/* Global page break styles for print */
+.container :global(.page-break-before) {
+  page-break-before: always !important;
+}
+
+/* Ensure each startlist starts on a new page */
+.professionalStartlist.page-break-before {
+  page-break-before: always !important;
+}
+
+/* Page height control - simplified */
+.container {
+  page-break-inside: avoid !important;
+}
+
+/* Print-specific styles */
+@media print {
+  .pdfElement {
+    margin: 0 !important;
+    padding: 10mm !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .container {
+    max-width: none !important;
+    width: 100% !important;
+    font-size: 7px !important;
+  }
+
+  /* Ensure proper page breaks */
+  .container {
+    page-break-inside: avoid !important;
+  }
+
+  .container table {
+    font-size: 9px !important;
+  }
+
+  .container th,
+  .container td {
+    padding: 2px 1px !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+  }
+
+  .container th {
+    font-size: 10px !important;
+    padding: 3px 2px !important;
+  }
+
+  /* Smaller column widths for print */
+  .container th:nth-child(1),
+  .container td:nth-child(1) { width: 25px !important; } /* Lp */
+
+  .container th:nth-child(2),
+  .container td:nth-child(2) { width: 25px !important; } /* Nr */
+
+  .container th:nth-child(4),
+  .container td:nth-child(4) { width: 40px !important; } /* Rocznik */
+
+  .container th:nth-child(6),
+  .container td:nth-child(6) { width: 45px !important; } /* PB */
+
+  .container th:nth-child(7),
+  .container td:nth-child(7) { width: 45px !important; } /* SB */
+
+  .container :global(.page-break-before) {
+    page-break-before: always !important;
+  }
+
+  .container :global(.print\:break-before-page) {
+    page-break-before: always !important;
+  }
+
+  /* Ensure startlist page breaks work */
+  .professionalStartlist.page-break-before {
+    page-break-before: always !important;
+  }
+
+  /* Ensure black borders in print */
+  .container * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide debug borders in print */
+  .container .border-red-500,
+  .container .border-blue-500,
+  .container .border-green-500 {
+    border-color: transparent !important;
+  }
+}

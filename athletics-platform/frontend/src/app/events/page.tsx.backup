@@ -1,0 +1,467 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Plus, Calendar, Users, Target, Clock, Ruler } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { useEvents } from '@/hooks/useEvents';
+import { Event, EventType, Gender, Category } from '@/types';
+
+const eventTypeLabels = {
+  [EventType.TRACK]: 'Bieżnia',
+  [EventType.FIELD]: 'Rzuty/Skoki',
+  [EventType.ROAD]: 'Ulica',
+  [EventType.COMBINED]: 'Wielobój',
+  [EventType.RELAY]: 'Sztafeta',
+};
+
+const genderLabels = {
+  [Gender.MALE]: 'M',
+  [Gender.FEMALE]: 'K',
+  [Gender.MIXED]: 'Mix',
+};
+
+const categoryLabels: Record<Category, string> = {
+  // Specjalne kategorie
+  [Category.WIELE]: 'Wiele',
+  
+  // Kategorie dziecięce (0-22 lat)
+  [Category.AGE_0_11]: '0-11',
+  [Category.AGE_5]: '5 lat',
+  [Category.AGE_6]: '6 lat',
+  [Category.AGE_7]: '7 lat',
+  [Category.AGE_8]: '8 lat',
+  [Category.AGE_9]: '9 lat',
+  [Category.AGE_10]: '10 lat',
+  [Category.AGE_11]: '11 lat',
+  [Category.AGE_12]: '12 lat',
+  [Category.AGE_13]: '13 lat',
+  [Category.AGE_14]: '14 lat',
+  [Category.AGE_15]: '15 lat',
+  [Category.AGE_16]: '16 lat',
+  [Category.AGE_17]: '17 lat',
+  [Category.AGE_18]: '18 lat',
+  [Category.AGE_19]: '19 lat',
+  [Category.AGE_20]: '20 lat',
+  [Category.AGE_21]: '21 lat',
+  [Category.AGE_22]: '22 lat',
+  
+  // Kategorie szkolne (klasy)
+  [Category.CLASS_1_SZKOLA_SREDNIA]: '1. klasa',
+  [Category.CLASS_2_SZKOLA_SREDNIA]: '2. klasa',
+  [Category.CLASS_3_SZKOLA_SREDNIA]: '3. klasa',
+  [Category.CLASS_4_SZKOLA_SREDNIA]: '4. klasa',
+  [Category.CLASS_5_SZKOLA_SREDNIA]: '5. klasa',
+  [Category.CLASS_6_SZKOLA_SREDNIA]: '6. klasa',
+  [Category.CLASS_7]: '7. klasa',
+  [Category.CLASS_8]: '8. klasa',
+  
+  // Kategorie młodzieżowe
+  [Category.U8]: 'U8',
+  [Category.U9]: 'U9',
+  [Category.U10]: 'U10',
+  [Category.U11]: 'U11',
+  [Category.U12]: 'U12',
+  [Category.U13]: 'U13',
+  [Category.U14]: 'U14',
+  [Category.U15]: 'U15',
+  [Category.U16]: 'U16',
+  [Category.U18]: 'U18',
+  [Category.U20]: 'U20',
+  [Category.U23]: 'U23',
+  
+  // Kategorie seniorskie
+  [Category.SENIOR]: 'Senior',
+  
+  // Kategorie Masters
+  [Category.M35]: 'M35',
+  [Category.M40]: 'M40',
+  [Category.M45]: 'M45',
+  [Category.M50]: 'M50',
+  [Category.M55]: 'M55',
+  [Category.M60]: 'M60',
+  [Category.M65]: 'M65',
+  [Category.M70]: 'M70',
+  [Category.M75]: 'M75',
+  [Category.M80]: 'M80',
+  [Category.M85]: 'M85',
+  [Category.M90]: 'M90',
+  [Category.M95]: 'M95',
+  [Category.M100]: 'M100',
+  [Category.M105]: 'M105',
+  [Category.M110]: 'M110',
+};
+
+function EventCard({ event }: { event: Event }) {
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg">{event.name}</CardTitle>
+            <div className="flex items-center space-x-2 mt-1">
+              <Badge variant="outline">
+                {eventTypeLabels[event.type]}
+              </Badge>
+              <Badge variant="outline">
+                {genderLabels[event.gender]}
+              </Badge>
+              <Badge variant="outline">
+                {categoryLabels[event.category]}
+              </Badge>
+            </div>
+          </div>
+          <div className="text-right text-sm text-gray-500">
+            {event.competition?.name && (
+              <div className="font-medium">{event.competition.name}</div>
+            )}
+            {event.competition?.location && (
+              <div>{event.competition.location}</div>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {event.scheduledTime && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Clock className="h-4 w-4 mr-2" />
+              <strong>Godzina rozpoczęcia:</strong>&nbsp;{new Date(event.scheduledTime).toLocaleString('pl-PL', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+              })}
+            </div>
+          )}
+          {event.distance && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Ruler className="h-4 w-4 mr-2" />
+              <strong>Dystans:</strong>&nbsp;{event.distance}
+            </div>
+          )}
+          {event.scheduledTime && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Clock className="h-4 w-4 mr-2" />
+              <strong>Godzina rozpoczęcia:</strong>&nbsp;{new Date(event.scheduledTime).toLocaleString('pl-PL', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+              })}
+            </div>
+          )}
+          {event.distance && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Ruler className="h-4 w-4 mr-2" />
+              <strong>Dystans:</strong>&nbsp;{event.distance}
+            </div>
+          )}
+          {event.maxParticipants && (
+            <div className="text-sm text-gray-600">
+              <strong>Limit uczestników:</strong> {event.maxParticipants}
+            </div>
+          )}
+          {event.seedTimeRequired && (
+            <div className="text-sm text-orange-600">
+              <strong>Wymagany czas kwalifikacyjny</strong>
+            </div>
+          )}
+          {event._count && (
+            <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t">
+              <div className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                {event._count.registrationEvents} rejestracji
+              </div>
+              <div className="flex items-center">
+                <Target className="h-4 w-4 mr-1" />
+                {event._count.results} wyników
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-between items-center mt-4">
+          <Badge className={`${event.unit === 'TIME' ? 'bg-blue-100 text-blue-800' : 
+                           event.unit === 'DISTANCE' ? 'bg-green-100 text-green-800' :
+                           event.unit === 'HEIGHT' ? 'bg-purple-100 text-purple-800' :
+                           'bg-orange-100 text-orange-800'}`}>
+            {event.unit}
+          </Badge>
+          <Link href={`/events/${event.id}`}>
+            <Button variant="outline" size="sm">
+              Zobacz szczegóły
+            </Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function EventsPage() {
+  const [typeFilter, setTypeFilter] = useState<EventType | 'ALL'>('ALL');
+  const [genderFilter, setGenderFilter] = useState<Gender | 'ALL'>('ALL');
+  const [sortBy, setSortBy] = useState<'name' | 'scheduledTime' | 'distance'>('name');
+  
+  const { data: events, isLoading, error } = useEvents();
+
+  const filteredAndSortedEvents = events?.filter(event => {
+    const matchesType = typeFilter === 'ALL' || event.type === typeFilter;
+    const matchesGender = genderFilter === 'ALL' || event.gender === genderFilter;
+    
+    return matchesType && matchesGender;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'scheduledTime':
+        // Sortuj po godzinie rozpoczęcia
+        if (!a.scheduledTime && !b.scheduledTime) return 0;
+        if (!a.scheduledTime) return 1;
+        if (!b.scheduledTime) return -1;
+        return new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime();
+      
+      case 'distance':
+        // Sortuj po dystansie (numerycznie)
+        if (!a.distance && !b.distance) return 0;
+        if (!a.distance) return 1;
+        if (!b.distance) return -1;
+        
+        // Wyciągnij liczbę z dystansu (np. "100m" -> 100)
+        const distanceA = parseFloat(a.distance.replace(/[^\d.]/g, '')) || 0;
+        const distanceB = parseFloat(b.distance.replace(/[^\d.]/g, '')) || 0;
+        return distanceA - distanceB;
+      
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  }) || [];
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Ładowanie konkurencji...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-600">Błąd podczas ładowania konkurencji</p>
+            <Button variant="outline" className="mt-2" onClick={() => window.location.reload()}>
+              Spróbuj ponownie
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <PageHeader 
+          title="Konkurencje" 
+          description="Zarządzaj konkurencjami w zawodach"
+        >
+          <Link href="/events/create">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Nowa konkurencja
+            </Button>
+          </Link>
+        </PageHeader>
+
+        {/* Filters and Sorting */}
+        <div className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex gap-2">
+                <Button
+                  variant={typeFilter === 'ALL' ? 'default' : 'outline'}
+                  size="sm"
+                    onClick={() => setTypeFilter('ALL')}
+                    >
+                  Wszystkie typy
+                </Button>
+                {Object.entries(eventTypeLabels).map(([type, label]) => (
+                  <Button
+                    key={type}
+                    variant={typeFilter === type ? 'default' : 'outline'}
+                      size="sm"
+                    onClick={() => setTypeFilter(type as EventType)}
+                >
+                    {label}
+                  </Button>
+                ))}
+            </div>
+          </div>
+
+          {/* Sorting */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700">Sortuj według:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={sortBy === 'name' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('name')}
+              >
+                <Target className="h-4 w-4 mr-1" />
+                Nazwa
+              </Button>
+              <Button
+                variant={sortBy === 'scheduledTime' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('scheduledTime')}
+              >
+                <Clock className="h-4 w-4 mr-1" />
+                Godzina rozpoczęcia
+              </Button>
+              <Button
+                variant={sortBy === 'distance' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('distance')}
+              >
+                <Ruler className="h-4 w-4 mr-1" />
+                Dystans
+              </Button>
+            </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={genderFilter === 'ALL' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGenderFilter('ALL')}
+              >
+                Wszystkie płcie
+              </Button>
+              {Object.entries(genderLabels).map(([gender, label]) => (
+                <Button
+                  key={gender}
+                  variant={genderFilter === gender ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setGenderFilter(gender as Gender)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sorting */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700">Sortuj według:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={sortBy === 'name' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('name')}
+              >
+                <Target className="h-4 w-4 mr-1" />
+                Nazwa
+              </Button>
+              <Button
+                variant={sortBy === 'scheduledTime' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('scheduledTime')}
+              >
+                <Clock className="h-4 w-4 mr-1" />
+                Godzina rozpoczęcia
+              </Button>
+              <Button
+                variant={sortBy === 'distance' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('distance')}
+              >
+                <Ruler className="h-4 w-4 mr-1" />
+                Dystans
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-blue-600">
+                {events?.length || 0}
+              </div>
+              <p className="text-sm text-gray-600">Wszystkich konkurencji</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-green-600">
+                {events?.filter(e => e.type === EventType.TRACK).length || 0}
+              </div>
+              <p className="text-sm text-gray-600">Bieżnia</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-purple-600">
+                {events?.filter(e => e.type === EventType.FIELD).length || 0}
+              </div>
+              <p className="text-sm text-gray-600">Rzuty/Skoki</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-orange-600">
+                {events?.reduce((sum, event) => sum + (event._count?.registrationEvents || 0), 0) || 0}
+              </div>
+              <p className="text-sm text-gray-600">Rejestracji</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Events Grid */}
+        {filteredAndSortedEvents.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {typeFilter !== 'ALL' || genderFilter !== 'ALL' 
+                  ? 'Brak wyników' 
+                  : 'Brak konkurencji'
+                }
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {typeFilter !== 'ALL' || genderFilter !== 'ALL'
+                  ? 'Spróbuj zmienić kryteria filtrowania.'
+                  : 'Nie ma jeszcze żadnych konkurencji. Utwórz pierwszą konkurencję.'
+                }
+              </p>
+              {typeFilter === 'ALL' && genderFilter === 'ALL' && (
+                <Link href="/events/create">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Utwórz konkurencję
+                  </Button>
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAndSortedEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
