@@ -1,0 +1,37 @@
+.printContainer {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.pageBreakBefore {
+  page-break-before: always;
+}
+
+.pageBreakBeforeIfLarge {
+  /* Łamanie strony tylko dla dużych list (powyżej 15 zawodników) */
+}
+
+.smallList {
+  /* Mała lista - może się zmieścić na tej samej stronie */
+}
+
+/* Print-specific styles */
+@media print {
+  .printContainer {
+    margin: 0;
+  }
+
+  .pageBreakBefore {
+    page-break-before: always;
+  }
+
+  .pageBreakBeforeIfLarge {
+    /* Łamanie strony tylko jeśli poprzednia lista była duża */
+    page-break-before: always;
+  }
+
+  .smallList {
+    /* Nie łam strony dla małych list */
+    page-break-before: auto;
+  }
+}

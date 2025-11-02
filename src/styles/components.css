@@ -1,0 +1,181 @@
+/* ===================================
+   COMPONENT STYLES
+   =================================== */
+
+/* Background Pattern Styles */
+.bg-pattern-dots {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.5'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Resizable Dialog Component */
+.resizable-dialog {
+  resize: both;
+  overflow: auto;
+  min-width: 800px;
+  min-height: 600px;
+  position: fixed;
+  top: 2.5vh;
+  left: 2.5vw;
+  right: 2.5vw;
+  bottom: 2.5vh;
+  transform: none;
+  z-index: var(--z-modal);
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+}
+
+/* Dialog content selector for compatibility */
+[data-slot="dialog-content"].resizable-dialog {
+  resize: both;
+  overflow: auto;
+  min-width: 800px;
+  min-height: 600px;
+  position: fixed;
+  top: 2.5vh;
+  left: 2.5vw;
+  right: 2.5vw;
+  bottom: 2.5vh;
+  transform: none;
+  z-index: var(--z-modal);
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+}
+
+/* Custom webkit resizer styling */
+.resizable-dialog::-webkit-resizer {
+  background: linear-gradient(
+    -45deg,
+    transparent 0%,
+    transparent 40%,
+    var(--scrollbar-thumb-hover) 40%,
+    var(--scrollbar-thumb-hover) 60%,
+    transparent 60%
+  );
+  border-radius: 0 0 4px 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Resize handle indicator */
+.resizable-dialog::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(
+    -45deg,
+    transparent 30%,
+    var(--scrollbar-thumb-hover) 30%,
+    var(--scrollbar-thumb-hover) 35%,
+    transparent 35%,
+    transparent 65%,
+    var(--scrollbar-thumb-hover) 65%,
+    var(--scrollbar-thumb-hover) 70%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: var(--z-dropdown);
+}
+
+/* Progress Bar Component */
+.progress-bar {
+  width: var(--progress-width, 0%);
+  transition: width 0.5s ease-in-out;
+}
+
+/* Hero Section Styles */
+.hero-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated Elements */
+.animate-bounce-delayed {
+  animation: bounce 2s infinite;
+  animation-delay: 1s;
+}
+
+/* Gradient Text Effects */
+.text-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Backdrop Blur Effects */
+.backdrop-blur-light {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.backdrop-blur-dark {
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ===================================
+   RESPONSIVE BREAKPOINTS
+   =================================== */
+
+/* Large tablets and small desktops */
+@media (max-width: 1024px) {
+  .resizable-dialog,
+  [data-slot="dialog-content"].resizable-dialog {
+    min-width: 700px;
+    min-height: 550px;
+    top: 5vh;
+    left: 5vw;
+    right: 5vw;
+    bottom: 5vh;
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .resizable-dialog,
+  [data-slot="dialog-content"].resizable-dialog {
+    min-width: 95vw;
+    min-height: 90vh;
+    resize: none;
+    top: 2.5vh;
+    left: 2.5vw;
+    right: 2.5vw;
+    bottom: 2.5vh;
+  }
+
+  .resizable-dialog::after {
+    display: none;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 640px) {
+  .resizable-dialog,
+  [data-slot="dialog-content"].resizable-dialog {
+    min-width: 100vw;
+    min-height: 100vh;
+    resize: none;
+    border-radius: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}
