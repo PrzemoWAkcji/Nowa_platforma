@@ -33,7 +33,33 @@ async function bootstrap() {
 
   // CORS configuration
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Allow localhost for development
+      if (origin.includes('localhost')) {
+        return callback(null, true);
+      }
+
+      // Allow Railway domains
+      if (
+        origin.includes('.railway.app') ||
+        origin.includes('.up.railway.app')
+      ) {
+        return callback(null, true);
+      }
+
+      // Allow configured frontend URL
+      if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+        return callback(null, true);
+      }
+
+      // Reject other origins
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
