@@ -2,15 +2,32 @@
 
 ## ✅ Co zostało poprawione:
 
-### 1. **Backend** (`athletics-platform/backend/nixpacks.toml`)
+### 1. **Backend Dockerfile** (`athletics-platform/backend/Dockerfile`)
+- ✅ Dodano `start.sh` - uruchamia migracje Prisma przed startem aplikacji
+- ✅ Poprawiono CMD, aby używać `sh start.sh` zamiast bezpośredniego `node dist/src/main`
+- ✅ `chmod +x start.sh` dla uprawnień wykonywania
+
+### 2. **Backend start.sh**
+```bash
+#!/bin/sh
+set -e
+
+echo "🔄 Running Prisma migrations..."
+npx prisma db push --accept-data-loss --skip-generate
+
+echo "🚀 Starting application..."
+exec node dist/src/main
+```
+
+### 3. **Backend** (`athletics-platform/backend/nixpacks.toml`)
 - Zmieniono `npm ci` → `npm install` (bardziej niezawodne na Railway)
 - Pozostawiono `npx prisma generate` i `npm run build`
 
-### 2. **Frontend** (`athletics-platform/frontend/nixpacks.toml`)
+### 4. **Frontend** (`athletics-platform/frontend/nixpacks.toml`)
 - Zmieniono `npm ci` → `npm install`
 - Pozostawiono `npm run build`
 
-### 3. **Railway.json**
+### 5. **Railway.json**
 - Poprawiono konfigurację buildera
 
 ---

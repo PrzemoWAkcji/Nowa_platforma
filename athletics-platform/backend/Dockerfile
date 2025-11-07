@@ -29,10 +29,12 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY package*.json ./
+COPY start.sh ./
 
-# Create non-root user
+# Create non-root user and make start.sh executable
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 && \
+    chmod +x start.sh && \
     chown -R nestjs:nodejs /app
 
 USER nestjs
@@ -46,4 +48,4 @@ EXPOSE 3001
 
 # Start application with dumb-init
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/src/main"]
+CMD ["sh", "start.sh"]
