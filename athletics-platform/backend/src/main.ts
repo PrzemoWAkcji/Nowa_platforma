@@ -87,10 +87,13 @@ async function bootstrap() {
     exposedHeaders: ['Set-Cookie'],
   });
 
-    const port = process.env.PORT || 3001;
-    await app.listen(port);
-    logger.log(`🚀 Backend running on http://localhost:${port}`);
-    console.log(`✅ Application listening on port ${port}`);
+    const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
+    console.log(`📍 PORT env var: ${process.env.PORT}`);
+    console.log(`📍 Parsed port: ${port}`);
+    console.log(`📍 Attempting to listen on port ${port}...`);
+    await app.listen(port, '0.0.0.0');
+    logger.log(`🚀 Backend running on port ${port}`);
+    console.log(`✅ Application listening on 0.0.0.0:${port}`);
   } catch (error) {
     console.error('❌ Bootstrap failed:', error);
     process.exit(1);
