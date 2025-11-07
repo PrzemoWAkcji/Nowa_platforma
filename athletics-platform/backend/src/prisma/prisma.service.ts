@@ -14,7 +14,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async onModuleInit() {
-    await this.$connect();
-    // PostgreSQL używa UTF-8 domyślnie, więc PRAGMA nie jest potrzebne
+    try {
+      console.log('🔌 Connecting to database...');
+      console.log(`📍 DATABASE_URL: ${process.env.DATABASE_URL ? 'SET' : 'NOT SET'}`);
+      await this.$connect();
+      console.log('✅ Database connected successfully');
+    } catch (error) {
+      console.error('❌ Database connection failed:', error);
+      throw error;
+    }
   }
 }

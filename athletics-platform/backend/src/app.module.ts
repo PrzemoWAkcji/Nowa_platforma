@@ -24,6 +24,7 @@ import { UsersModule } from './users/users.module';
 import { RecordsModule } from './records/records.module';
 import { RelayTeamsModule } from './relay-teams/relay-teams.module';
 import { HealthController } from './health/health.controller';
+import { DebugController } from './health/debug.controller';
 
 @Module({
   imports: [
@@ -69,7 +70,7 @@ import { HealthController } from './health/health.controller';
     RecordsModule,
     RelayTeamsModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [AppController, HealthController, DebugController],
   providers: [
     AppService,
     SecurityLoggerService,
