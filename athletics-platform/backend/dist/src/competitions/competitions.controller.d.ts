@@ -1,9 +1,9 @@
+import { Response } from 'express';
+import { FinishlynxService } from '../finishlynx/finishlynx.service';
 import { CompetitionsService } from './competitions.service';
 import { CreateCompetitionDto } from './dto/create-competition.dto';
 import { UpdateCompetitionDto } from './dto/update-competition.dto';
-import { FinishlynxService } from '../finishlynx/finishlynx.service';
 import { StartListImportService } from './startlist-import.service';
-import { Response } from 'express';
 export declare class CompetitionsController {
     private readonly competitionsService;
     private readonly finishlynxService;

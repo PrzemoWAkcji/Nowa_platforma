@@ -40,11 +40,11 @@ async function bootstrap() {
       }
 
       // Allow localhost for development
-      if (origin.includes('localhost')) {
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
         return callback(null, true);
       }
 
-      // Allow Railway domains
+      // Allow Railway domains (backend and frontend)
       if (
         origin.includes('.railway.app') ||
         origin.includes('.up.railway.app')
@@ -52,10 +52,20 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      // Allow configured frontend URL
-      if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+      // Allow Vercel domains
+      if (origin.includes('.vercel.app')) {
         return callback(null, true);
       }
+
+      // Allow configured frontend URLs (comma-separated list)
+      const frontendUrls =
+        process.env.FRONTEND_URL?.split(',').map((url) => url.trim()) || [];
+      if (frontendUrls.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Log rejected origins for debugging
+      logger.warn(`CORS blocked origin: ${origin}`);
 
       // Reject other origins
       callback(new Error('Not allowed by CORS'));
@@ -68,7 +78,9 @@ async function bootstrap() {
       'X-Requested-With',
       'Accept',
       'Origin',
+      'X-CSRF-Token',
     ],
+    exposedHeaders: ['Set-Cookie'],
   });
 
   const port = process.env.PORT || 3001;

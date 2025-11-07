@@ -1,5 +1,5 @@
+import { FinishlynxAthleteResultDto, ImportFileDto, ImportFinishlynxDto } from './dto/import-finishlynx.dto';
 import { FinishlynxService } from './finishlynx.service';
-import { ImportFinishlynxDto, ImportFileDto, FinishlynxAthleteResultDto } from './dto/import-finishlynx.dto';
 export declare class FinishlynxController {
     private readonly finishlynxService;
     constructor(finishlynxService: FinishlynxService);

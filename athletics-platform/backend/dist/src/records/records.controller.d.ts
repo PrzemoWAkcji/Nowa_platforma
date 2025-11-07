@@ -1,6 +1,6 @@
-import { RecordsService } from './records.service';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { UpdateRecordDto } from './dto/update-record.dto';
+import { RecordsService } from './records.service';
 export declare class RecordsController {
     private readonly recordsService;
     constructor(recordsService: RecordsService);

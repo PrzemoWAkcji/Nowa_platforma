@@ -15,13 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AthletesController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../auth/guards/roles.guard");
 const athletes_service_1 = require("./athletes.service");
 const create_athlete_dto_1 = require("./dto/create-athlete.dto");
 const update_athlete_dto_1 = require("./dto/update-athlete.dto");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const public_decorator_1 = require("../auth/decorators/public.decorator");
 let AthletesController = class AthletesController {
     athletesService;
     constructor(athletesService) {

@@ -15,12 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FinishlynxController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
+const client_1 = require("@prisma/client");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const client_1 = require("@prisma/client");
-const finishlynx_service_1 = require("./finishlynx.service");
 const import_finishlynx_dto_1 = require("./dto/import-finishlynx.dto");
+const finishlynx_service_1 = require("./finishlynx.service");
 let FinishlynxController = class FinishlynxController {
     finishlynxService;
     constructor(finishlynxService) {

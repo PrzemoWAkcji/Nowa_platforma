@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
-const throttler_1 = require("@nestjs/throttler");
 const app_module_1 = require("./app.module");
 const all_exceptions_filter_1 = require("./common/filters/all-exceptions.filter");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
@@ -19,7 +18,6 @@ async function bootstrap() {
     const securityLogger = app.get(security_logger_service_1.SecurityLoggerService);
     app.useGlobalFilters(new http_exception_filter_1.HttpExceptionFilter(), new all_exceptions_filter_1.AllExceptionsFilter(securityLogger));
     app.useGlobalInterceptors(new performance_interceptor_1.PerformanceInterceptor());
-    app.useGlobalGuards(app.get(throttler_1.ThrottlerGuard));
     app.enableCors({
         origin: process.env.FRONTEND_URL || 'http://localhost:3000',
         credentials: true,

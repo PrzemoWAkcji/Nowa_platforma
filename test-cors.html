@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CORS Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .result {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 5px;
+        white-space: pre-wrap;
+      }
+      .success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 CORS Test dla Railway Backend</h1>
+
+    <h2>Test 1: Health Check</h2>
+    <button onclick="testHealth()">Test GET /health</button>
+    <div id="health-result"></div>
+
+    <h2>Test 2: Login (POST z credentials)</h2>
+    <button onclick="testLogin()">Test POST /auth/login</button>
+    <div id="login-result"></div>
+
+    <h2>Test 3: Competitions (GET)</h2>
+    <button onclick="testCompetitions()">Test GET /competitions</button>
+    <div id="competitions-result"></div>
+
+    <script>
+      const BACKEND_URL = "https://nowaplatforma-production.up.railway.app";
+
+      async function testHealth() {
+        const resultDiv = document.getElementById("health-result");
+        resultDiv.innerHTML = '<div class="result">Testing...</div>';
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/health`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+          resultDiv.innerHTML = `<div class="result success">
+✅ SUCCESS
+Status: ${response.status}
+Response: ${JSON.stringify(data, null, 2)}
+
+Headers:
+${[...response.headers.entries()].map(([k, v]) => `${k}: ${v}`).join("\n")}
+</div>`;
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="result error">
+❌ ERROR
+${error.message}
+
+To jest CORS error jeśli widzisz:
+- "Failed to fetch"
+- "Network Error"
+- "CORS policy"
+</div>`;
+        }
+      }
+
+      async function testLogin() {
+        const resultDiv = document.getElementById("login-result");
+        resultDiv.innerHTML = '<div class="result">Testing...</div>';
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include", // WAŻNE dla cookies
+            body: JSON.stringify({
+              email: "admin@athletics.pl",
+              password: "AdminPass2024!",
+            }),
+          });
+
+          const data = await response.json();
+          resultDiv.innerHTML = `<div class="result ${response.ok ? "success" : "error"}">
+${response.ok ? "✅ SUCCESS" : "❌ FAILED"}
+Status: ${response.status}
+Response: ${JSON.stringify(data, null, 2)}
+</div>`;
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="result error">
+❌ ERROR
+${error.message}
+
+To jest CORS error!
+Backend nie pozwala na połączenia z tej domeny.
+</div>`;
+        }
+      }
+
+      async function testCompetitions() {
+        const resultDiv = document.getElementById("competitions-result");
+        resultDiv.innerHTML = '<div class="result">Testing...</div>';
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/competitions`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+          resultDiv.innerHTML = `<div class="result ${response.ok ? "success" : "error"}">
+${response.ok ? "✅ SUCCESS" : "❌ FAILED"}
+Status: ${response.status}
+Response: ${JSON.stringify(data, null, 2)}
+</div>`;
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="result error">
+❌ ERROR
+${error.message}
+
+To jest CORS error!
+</div>`;
+        }
+      }
+    </script>
+  </body>
+</html>

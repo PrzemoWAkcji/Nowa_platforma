@@ -11,11 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CompetitionsService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_service_1 = require("../prisma/prisma.service");
 const crypto_1 = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const util_1 = require("util");
+const prisma_service_1 = require("../prisma/prisma.service");
 const writeFile = (0, util_1.promisify)(fs.writeFile);
 const unlink = (0, util_1.promisify)(fs.unlink);
 const mkdir = (0, util_1.promisify)(fs.mkdir);
@@ -28,7 +28,7 @@ let CompetitionsService = class CompetitionsService {
         const agentId = this.generateAgentId();
         const liveResultsToken = this.generateLiveResultsToken();
         const adminUser = await this.prisma.user.findFirst({
-            where: { role: 'ADMIN' }
+            where: { role: 'ADMIN' },
         });
         if (!adminUser) {
             throw new Error('No admin user found in database');
@@ -137,15 +137,15 @@ let CompetitionsService = class CompetitionsService {
         if (competition.registrations && competition.registrations.length > 0) {
             throw new common_1.BadRequestException('Nie można usunąć zawodów, które mają rejestracje. Usuń najpierw wszystkie rejestracje.');
         }
-        const hasResults = competition.events.some(event => event.results && event.results.length > 0);
+        const hasResults = competition.events.some((event) => event.results && event.results.length > 0);
         if (hasResults) {
             throw new common_1.BadRequestException('Nie można usunąć zawodów, które mają wyniki. Usuń najpierw wszystkie wyniki.');
         }
-        const hasRelayRegistrations = competition.events.some(event => event.relayTeamRegistrations && event.relayTeamRegistrations.length > 0);
+        const hasRelayRegistrations = competition.events.some((event) => event.relayTeamRegistrations && event.relayTeamRegistrations.length > 0);
         if (hasRelayRegistrations) {
             throw new common_1.BadRequestException('Nie można usunąć zawodów, które mają rejestracje zespołów sztafetowych. Usuń najpierw wszystkie zespoły.');
         }
-        const hasRelayResults = competition.relayTeams.some(team => team.results && team.results.length > 0);
+        const hasRelayResults = competition.relayTeams.some((team) => team.results && team.results.length > 0);
         if (hasRelayResults) {
             throw new common_1.BadRequestException('Nie można usunąć zawodów, które mają wyniki zespołów sztafetowych. Usuń najpierw wszystkie wyniki.');
         }
@@ -214,52 +214,52 @@ let CompetitionsService = class CompetitionsService {
             where: {
                 status: 'PUBLISHED',
                 registrationStartDate: {
-                    lte: now
+                    lte: now,
                 },
                 OR: [
                     { registrationEndDate: null },
-                    { registrationEndDate: { gte: now } }
-                ]
+                    { registrationEndDate: { gte: now } },
+                ],
             },
             data: {
-                status: 'REGISTRATION_OPEN'
-            }
+                status: 'REGISTRATION_OPEN',
+            },
         });
         await this.prisma.competition.updateMany({
             where: {
                 status: 'REGISTRATION_OPEN',
                 registrationEndDate: {
-                    lt: now
-                }
+                    lt: now,
+                },
             },
             data: {
-                status: 'REGISTRATION_CLOSED'
-            }
+                status: 'REGISTRATION_CLOSED',
+            },
         });
         await this.prisma.competition.updateMany({
             where: {
                 status: { in: ['REGISTRATION_CLOSED', 'PUBLISHED'] },
                 startDate: {
-                    lte: now
+                    lte: now,
                 },
                 endDate: {
-                    gte: now
-                }
+                    gte: now,
+                },
             },
             data: {
-                status: 'ONGOING'
-            }
+                status: 'ONGOING',
+            },
         });
         await this.prisma.competition.updateMany({
             where: {
                 status: 'ONGOING',
                 endDate: {
-                    lt: now
-                }
+                    lt: now,
+                },
             },
             data: {
-                status: 'COMPLETED'
-            }
+                status: 'COMPLETED',
+            },
         });
         return { message: 'Statusy zawodów zostały zaktualizowane' };
     }
@@ -315,7 +315,7 @@ let CompetitionsService = class CompetitionsService {
             throw new common_1.NotFoundException('Zawody nie zostały znalezione');
         }
         const existingLogos = competition.logos || [];
-        const logoToDelete = existingLogos.find(logo => logo.id === logoId);
+        const logoToDelete = existingLogos.find((logo) => logo.id === logoId);
         if (!logoToDelete) {
             throw new common_1.NotFoundException('Logo nie zostało znalezione');
         }
@@ -326,7 +326,7 @@ let CompetitionsService = class CompetitionsService {
         catch (error) {
             console.warn(`Nie można usunąć pliku: ${filePath}`, error);
         }
-        const updatedLogos = existingLogos.filter(logo => logo.id !== logoId);
+        const updatedLogos = existingLogos.filter((logo) => logo.id !== logoId);
         await this.prisma.competition.update({
             where: { id: competitionId },
             data: { logos: updatedLogos },

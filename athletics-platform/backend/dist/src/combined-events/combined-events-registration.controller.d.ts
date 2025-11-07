@@ -9,20 +9,20 @@ export declare class CombinedEventsRegistrationController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            discipline: string;
             points: number;
             wind: string | null;
             isValid: boolean;
-            discipline: string;
             performance: string | null;
             combinedEventId: string;
             dayOrder: number;
         }[];
-        gender: import(".prisma/client").$Enums.Gender;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        athleteId: string;
+        gender: import(".prisma/client").$Enums.Gender;
         competitionId: string;
+        athleteId: string;
         eventType: import(".prisma/client").$Enums.CombinedEventType;
         totalPoints: number;
         isComplete: boolean;
@@ -47,12 +47,15 @@ export declare class CombinedEventsRegistrationController {
     }): Promise<{
         combinedEvent: {
             athlete: {
+                id: string;
                 firstName: string;
                 lastName: string;
-                dateOfBirth: Date;
+                createdAt: Date;
+                updatedAt: Date;
                 gender: import(".prisma/client").$Enums.Gender;
-                club: string | null;
                 category: import(".prisma/client").$Enums.Category;
+                club: string | null;
+                dateOfBirth: Date;
                 nationality: string | null;
                 licenseNumber: string | null;
                 classification: string | null;
@@ -60,15 +63,8 @@ export declare class CombinedEventsRegistrationController {
                 coachId: string | null;
                 personalBests: import("@prisma/client/runtime/library").JsonValue | null;
                 seasonBests: import("@prisma/client/runtime/library").JsonValue | null;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
             };
             competition: {
-                isPublic: boolean;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
                 name: string;
                 description: string | null;
                 startDate: Date;
@@ -76,37 +72,41 @@ export declare class CombinedEventsRegistrationController {
                 location: string;
                 venue: string | null;
                 type: import(".prisma/client").$Enums.CompetitionType;
-                status: import(".prisma/client").$Enums.CompetitionStatus;
-                agentId: string | null;
-                liveResultsEnabled: boolean;
-                liveResultsToken: string | null;
                 registrationStartDate: Date | null;
                 registrationEndDate: Date | null;
                 maxParticipants: number | null;
                 registrationFee: import("@prisma/client/runtime/library").Decimal | null;
+                isPublic: boolean;
                 allowLateRegistration: boolean;
+                liveResultsEnabled: boolean;
                 logos: import("@prisma/client/runtime/library").JsonValue | null;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                status: import(".prisma/client").$Enums.CompetitionStatus;
+                agentId: string | null;
+                liveResultsToken: string | null;
                 createdById: string;
             };
             results: {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                discipline: string;
                 points: number;
                 wind: string | null;
                 isValid: boolean;
-                discipline: string;
                 performance: string | null;
                 combinedEventId: string;
                 dayOrder: number;
             }[];
         } & {
-            gender: import(".prisma/client").$Enums.Gender;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            athleteId: string;
+            gender: import(".prisma/client").$Enums.Gender;
             competitionId: string;
+            athleteId: string;
             eventType: import(".prisma/client").$Enums.CombinedEventType;
             totalPoints: number;
             isComplete: boolean;
@@ -119,12 +119,12 @@ export declare class CombinedEventsRegistrationController {
         id: string;
         eventType: import(".prisma/client").$Enums.CombinedEventType;
         athlete: {
+            id: string;
             firstName: string;
             lastName: string;
             gender: import(".prisma/client").$Enums.Gender;
-            club: string | null;
             category: import(".prisma/client").$Enums.Category;
-            id: string;
+            club: string | null;
         };
         totalPoints: number;
         isComplete: boolean;

@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Railway CORS Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+      }
+      .input-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+        margin-top: 10px;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      .test-btn {
+        background: #2196f3;
+      }
+      .test-btn:hover {
+        background: #0b7dda;
+      }
+      #results {
+        margin-top: 30px;
+        padding: 15px;
+        border-radius: 4px;
+        display: none;
+      }
+      .success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+      .info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin-top: 10px;
+      }
+      .test-section {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 4px;
+      }
+      .status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+      .status-pass {
+        background: #28a745;
+        color: white;
+      }
+      .status-fail {
+        background: #dc3545;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 Railway Backend CORS Test</h1>
+
+      <div class="input-group">
+        <label for="backendUrl">Backend URL (Railway):</label>
+        <input
+          type="text"
+          id="backendUrl"
+          placeholder="https://your-backend.railway.app"
+          value=""
+        />
+      </div>
+
+      <div>
+        <button onclick="testHealth()" class="test-btn">
+          Test 1: Health Check
+        </button>
+        <button onclick="testCors()" class="test-btn">
+          Test 2: CORS Headers
+        </button>
+        <button onclick="testAuth()" class="test-btn">
+          Test 3: Auth Endpoint
+        </button>
+        <button onclick="runAllTests()">🔥 Uruchom Wszystkie Testy</button>
+      </div>
+
+      <div id="results"></div>
+    </div>
+
+    <script>
+      let testResults = [];
+
+      function getBackendUrl() {
+        const url = document.getElementById("backendUrl").value.trim();
+        if (!url) {
+          showResults("error", "Proszę podać URL backendu Railway!");
+          throw new Error("No backend URL");
+        }
+        return url.replace(/\/$/, ""); // Remove trailing slash
+      }
+
+      function showResults(type, message, details = null) {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.className = type;
+        resultsDiv.style.display = "block";
+
+        let html = `<strong>${message}</strong>`;
+        if (details) {
+          html += `<pre>${JSON.stringify(details, null, 2)}</pre>`;
+        }
+        resultsDiv.innerHTML = html;
+      }
+
+      async function testHealth() {
+        try {
+          const backendUrl = getBackendUrl();
+          showResults("info", "⏳ Testowanie Health Check...");
+
+          const response = await fetch(`${backendUrl}/health`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            testResults.push({ test: "Health Check", status: "PASS" });
+            showResults("success", "✅ Health Check: OK", data);
+          } else {
+            testResults.push({
+              test: "Health Check",
+              status: "FAIL",
+              error: `Status: ${response.status}`,
+            });
+            showResults("error", `❌ Health Check Failed: ${response.status}`);
+          }
+        } catch (error) {
+          testResults.push({
+            test: "Health Check",
+            status: "FAIL",
+            error: error.message,
+          });
+          showResults("error", `❌ Health Check Error: ${error.message}`);
+        }
+      }
+
+      async function testCors() {
+        try {
+          const backendUrl = getBackendUrl();
+          showResults("info", "⏳ Testowanie CORS Headers...");
+
+          const response = await fetch(`${backendUrl}/health`, {
+            method: "OPTIONS",
+            headers: {
+              Origin: window.location.origin,
+              "Access-Control-Request-Method": "GET",
+              "Access-Control-Request-Headers": "Content-Type",
+            },
+          });
+
+          const corsHeaders = {
+            "Access-Control-Allow-Origin": response.headers.get(
+              "Access-Control-Allow-Origin"
+            ),
+            "Access-Control-Allow-Methods": response.headers.get(
+              "Access-Control-Allow-Methods"
+            ),
+            "Access-Control-Allow-Headers": response.headers.get(
+              "Access-Control-Allow-Headers"
+            ),
+            "Access-Control-Allow-Credentials": response.headers.get(
+              "Access-Control-Allow-Credentials"
+            ),
+          };
+
+          if (corsHeaders["Access-Control-Allow-Origin"]) {
+            testResults.push({ test: "CORS Headers", status: "PASS" });
+            showResults("success", "✅ CORS Headers: OK", corsHeaders);
+          } else {
+            testResults.push({
+              test: "CORS Headers",
+              status: "FAIL",
+              error: "No CORS headers",
+            });
+            showResults(
+              "error",
+              "❌ CORS Headers: Brak nagłówków CORS!",
+              corsHeaders
+            );
+          }
+        } catch (error) {
+          testResults.push({
+            test: "CORS Headers",
+            status: "FAIL",
+            error: error.message,
+          });
+          showResults("error", `❌ CORS Test Error: ${error.message}`);
+        }
+      }
+
+      async function testAuth() {
+        try {
+          const backendUrl = getBackendUrl();
+          showResults("info", "⏳ Testowanie Auth Endpoint...");
+
+          const response = await fetch(`${backendUrl}/api/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              email: "test@example.com",
+              password: "wrongpassword",
+            }),
+          });
+
+          // We expect 401, but if we get it without CORS error, CORS is working
+          if (response.status === 401) {
+            const data = await response.json();
+            testResults.push({ test: "Auth Endpoint", status: "PASS" });
+            showResults(
+              "success",
+              "✅ Auth Endpoint: Accessible (CORS działa!)",
+              {
+                status: response.status,
+                message:
+                  "Endpoint jest dostępny, CORS skonfigurowany poprawnie",
+                response: data,
+              }
+            );
+          } else {
+            testResults.push({ test: "Auth Endpoint", status: "PASS" });
+            const data = await response.json();
+            showResults("success", "✅ Auth Endpoint: Accessible", data);
+          }
+        } catch (error) {
+          testResults.push({
+            test: "Auth Endpoint",
+            status: "FAIL",
+            error: error.message,
+          });
+          showResults(
+            "error",
+            `❌ Auth Endpoint Error: ${error.message}<br><br>To może być problem z CORS!`
+          );
+        }
+      }
+
+      async function runAllTests() {
+        testResults = [];
+
+        await testHealth();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        await testCors();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        await testAuth();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Show summary
+        const passed = testResults.filter((r) => r.status === "PASS").length;
+        const failed = testResults.filter((r) => r.status === "FAIL").length;
+
+        let summaryHtml = "<h3>📊 Podsumowanie Testów:</h3>";
+        testResults.forEach((result) => {
+          const statusClass =
+            result.status === "PASS" ? "status-pass" : "status-fail";
+          const icon = result.status === "PASS" ? "✅" : "❌";
+          summaryHtml += `<div>${icon} ${result.test} <span class="status ${statusClass}">${result.status}</span></div>`;
+          if (result.error) {
+            summaryHtml += `<div style="color: #666; margin-left: 25px; font-size: 12px;">Error: ${result.error}</div>`;
+          }
+        });
+
+        summaryHtml += `<div style="margin-top: 20px; font-weight: bold;">`;
+        summaryHtml += `Zaliczone: ${passed} / ${testResults.length}`;
+        summaryHtml += `</div>`;
+
+        const type = failed === 0 ? "success" : "error";
+        showResults(type, summaryHtml);
+      }
+
+      // Auto-detect Railway URL from current page if opened from Railway
+      window.addEventListener("load", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const backendUrl = urlParams.get("backend");
+        if (backendUrl) {
+          document.getElementById("backendUrl").value = backendUrl;
+        }
+      });
+    </script>
+  </body>
+</html>

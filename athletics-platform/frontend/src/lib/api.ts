@@ -33,10 +33,17 @@ import type {
 } from "../types";
 
 // Konfiguracja axios z obsługą cookies
+const getBaseURL = () => {
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+};
+
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+  baseURL: getBaseURL(),
   withCredentials: true,
-  timeout: 60000, // Zwiększony timeout do 60 sekund dla importu CSV
+  timeout: 60000,
 });
 
 // Request interceptor - dodaj Authorization header w developmencie
