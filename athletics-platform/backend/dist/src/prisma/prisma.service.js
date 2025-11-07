@@ -24,7 +24,6 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
     }
     async onModuleInit() {
         await this.$connect();
-        await this.$executeRaw `PRAGMA encoding = 'UTF-8'`;
     }
 };
 exports.PrismaService = PrismaService;
