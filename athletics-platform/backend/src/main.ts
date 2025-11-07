@@ -7,8 +7,12 @@ import { PerformanceInterceptor } from './common/interceptors/performance.interc
 import { SecurityLoggerService } from './common/logger/security-logger.service';
 
 async function bootstrap() {
+  console.log('🔧 Starting bootstrap...');
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  try {
+    console.log('📦 Creating NestFactory...');
+    const app = await NestFactory.create(AppModule);
+    console.log('✅ NestFactory created successfully');
 
   // Global pipes
   app.useGlobalPipes(
@@ -83,8 +87,13 @@ async function bootstrap() {
     exposedHeaders: ['Set-Cookie'],
   });
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  logger.log(`🚀 Backend running on http://localhost:${port}`);
+    const port = process.env.PORT || 3001;
+    await app.listen(port);
+    logger.log(`🚀 Backend running on http://localhost:${port}`);
+    console.log(`✅ Application listening on port ${port}`);
+  } catch (error) {
+    console.error('❌ Bootstrap failed:', error);
+    process.exit(1);
+  }
 }
 bootstrap();
