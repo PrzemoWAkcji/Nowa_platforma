@@ -39,8 +39,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
       set(newState);
 
-      // In development, save token to localStorage for Authorization header
-      if (process.env.NODE_ENV !== "production" && token) {
+      // Save token to localStorage for Authorization header
+      if (token) {
         localStorage.setItem("auth-token", token);
       }
 
@@ -99,10 +99,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     } catch (error: any) {
       // Ignore logout errors
     } finally {
-      // Wyczyść localStorage w developmencie
-      if (process.env.NODE_ENV !== "production") {
-        localStorage.removeItem("auth-token");
-      }
+      // Wyczyść localStorage
+      localStorage.removeItem("auth-token");
 
       set({
         user: null,
@@ -135,14 +133,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   initAuth: async () => {
     const state = get();
 
-    // In development, check localStorage
-    if (process.env.NODE_ENV !== "production") {
-      const savedToken = localStorage.getItem("auth-token");
-      if (savedToken && !state.isAuthenticated) {
-        set({ token: savedToken });
-        await state.checkAuth();
-        return;
-      }
+    // Check localStorage for saved token
+    const savedToken = localStorage.getItem("auth-token");
+    if (savedToken && !state.isAuthenticated) {
+      set({ token: savedToken });
+      await state.checkAuth();
+      return;
     }
 
     if (state.token && !state.isAuthenticated) {

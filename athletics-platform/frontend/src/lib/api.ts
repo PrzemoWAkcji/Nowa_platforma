@@ -47,15 +47,12 @@ const api: AxiosInstance = axios.create({
   timeout: 60000,
 });
 
-// Request interceptor - dodaj Authorization header w developmencie
+// Request interceptor - dodaj Authorization header
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // W developmencie używaj Authorization header zamiast cookies
-    if (process.env.NODE_ENV !== "production") {
-      const token = localStorage.getItem("auth-token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = localStorage.getItem("auth-token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
