@@ -34,10 +34,11 @@ import type {
 
 // Konfiguracja axios z obsługą cookies
 const getBaseURL = () => {
-  if (typeof window === 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-  }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 
+    (process.env.NODE_ENV === 'production' 
+      ? 'https://nowaplatforma-production.up.railway.app' 
+      : 'http://localhost:3001');
+  return apiUrl;
 };
 
 const api: AxiosInstance = axios.create({
