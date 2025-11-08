@@ -19,6 +19,8 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { useAuthStore } from "@/store/authStore";
 import { Competition as APICompetition } from "@/types";
+import { competitionsApi } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   ArrowRight,
@@ -161,10 +163,14 @@ export default function Home() {
   const { showToast } = useToast();
   const router = useRouter();
   const { user, isAuthenticated, login, logout, initAuth } = useAuthStore();
-  // TODO: Replace mock data with React Query API call
-  const apiCompetitions = null;
-  const competitionsLoading = false;
-  const competitionsError = null;
+  
+  const { data: apiCompetitions, isLoading: competitionsLoading, error: competitionsError } = useQuery({
+    queryKey: ["competitions-public"],
+    queryFn: async () => {
+      const response = await competitionsApi.getPublic();
+      return response.data;
+    },
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -193,38 +199,9 @@ export default function Home() {
     }
   }, [isAuthenticated, user, router]);
 
-  // Mapowanie danych z API na lokalny format
   const competitions = apiCompetitions
     ? apiCompetitions.map(mapApiCompetitionToLocal)
-    : [
-        // Mock data dla testów
-        {
-          id: "mock-1",
-          name: "Mistrzostwa Polski Seniorów",
-          location: "Warszawa",
-          startDate: "2024-07-15T00:00:00.000Z",
-          endDate: "2024-07-17T00:00:00.000Z",
-          status: "REGISTRATION_OPEN" as CompetitionStatus,
-          registrations: 45,
-          maxRegistrations: 100,
-          category: "Mistrzostwa" as CompetitionCategory,
-          featured: true,
-          liveResults: true,
-        },
-        {
-          id: "mock-2",
-          name: "Memoriał Janusza Kusocińskiego",
-          location: "Kraków",
-          startDate: "2024-08-10T00:00:00.000Z",
-          endDate: "2024-08-10T00:00:00.000Z",
-          status: "PUBLISHED" as CompetitionStatus,
-          registrations: 23,
-          maxRegistrations: 80,
-          category: "Memoriał" as CompetitionCategory,
-          featured: false,
-          liveResults: false,
-        },
-      ];
+    : [];
 
   // Filtrowanie zawodów
   const filteredCompetitions = competitions.filter((competition) => {
@@ -355,7 +332,7 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">
-            Błąd podczas ładowania zawodów: {competitionsError.message}
+            Błąd podczas ładowania zawodów: {(competitionsError as Error).message}
           </p>
           <Button onClick={() => window.location.reload()}>
             Spróbuj ponownie
