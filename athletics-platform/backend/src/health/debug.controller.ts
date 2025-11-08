@@ -1,6 +1,6 @@
 import { Controller, Get, Post } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
 
 @Controller('debug')
@@ -24,15 +24,11 @@ export class DebugController {
 
   @Post('create-admin')
   async createAdmin() {
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash('password123', 12);
     
-    const existing = await this.prisma.user.findUnique({
+    await this.prisma.user.deleteMany({
       where: { email: 'admin@athletics.pl' },
     });
-
-    if (existing) {
-      return { message: 'Admin already exists', email: 'admin@athletics.pl' };
-    }
 
     const admin = await this.prisma.user.create({
       data: {
